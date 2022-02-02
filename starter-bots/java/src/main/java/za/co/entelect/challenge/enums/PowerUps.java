@@ -7,4 +7,5 @@ public enum PowerUps {
     BOOST,
     @SerializedName("OIL")
     OIL
+    //TAMBAHIN POWER UPS DI SINI
 }
