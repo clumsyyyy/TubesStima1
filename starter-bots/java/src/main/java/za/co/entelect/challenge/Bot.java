@@ -3,6 +3,7 @@ package za.co.entelect.challenge;
 import za.co.entelect.challenge.command.*;
 import za.co.entelect.challenge.entities.*;
 import za.co.entelect.challenge.enums.Terrain;
+import za.co.entelect.challenge.enums.PowerUps;
 
 import java.util.*;
 
@@ -10,25 +11,42 @@ import static java.lang.Math.max;
 
 public class Bot {
 
+    // ========== INISIALISASI VARIABEL PRIVATE ==========
     private static final int maxSpeed = 9;
-    private List<Integer> directionList = new ArrayList<>();
+    private List<Command> directionList = new ArrayList<>();
 
     private Random random;
     private GameState gameState;
     private Car opponent;
     private Car myCar;
+
+    // inisialisasi commands
+    private final static Command ACCELERATE = new AccelerateCommand();
+    private final static Command LIZARD = new LizardCommand();
+    private final static Command OIL = new OilCommand();
+    private final static Command BOOST = new BoostCommand();
+    private final static Command EMP = new EmpCommand();
     private final static Command FIX = new FixCommand();
 
+    // inisialisasi belok kiri / kanan
+    private final static Command LEFT = new ChangeLaneCommand(-1);
+    private final static Command RIGHT = new ChangeLaneCommand(1);
+
+    // ini bagian public
+    // inisialisasi instance nya 
+    // TODO: opponent gimana maksudnya?
     public Bot(Random random, GameState gameState) {
         this.random = random;
         this.gameState = gameState;
         this.myCar = gameState.player;
         this.opponent = gameState.opponent;
 
-        directionList.add(-1);
-        directionList.add(1);
+        directionList.add(LEFT);
+        directionList.add(RIGHT);
     }
 
+
+    // ========== PUBLIC =========
     public Command run() {
         List<Object> blocks = getBlocksInFront(myCar.position.lane, myCar.position.block);
         if (myCar.damage >= 5) {
@@ -41,6 +59,9 @@ public class Bot {
         return new AccelerateCommand();
     }
 
+
+
+    // ========== INISIALISASI FUNGSI HELPER DI SINI ==========
     /**
      * Returns map of blocks and the objects in the for the current lanes, returns the amount of blocks that can be
      * traversed at max speed.
