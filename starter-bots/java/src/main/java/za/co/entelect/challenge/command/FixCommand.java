@@ -6,4 +6,5 @@ public class FixCommand implements Command {
     public String render() {
         return String.format("FIX");
     }
+
 }

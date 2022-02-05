@@ -9,17 +9,14 @@ import java.util.*;
 
 import static java.lang.Math.max;
 
+import java.security.SecureRandom;
 public class Bot {
 
     // ========== INISIALISASI VARIABEL PRIVATE ==========
     private static final int maxSpeed = 9;
     private List<Command> directionList = new ArrayList<>();
 
-    private Random random;
-    private GameState gameState;
-    private Car opponent;
-    private Car myCar;
-
+    private final Random random;
     // inisialisasi commands sesuai urutan di game-rules.md
 
     // nothing / accel / decel
@@ -44,29 +41,25 @@ public class Bot {
 
     // ini bagian public
     // user-defined constructor
-    // TODO: opponent gimana maksudnya?
-    public Bot(Random random, GameState gameState) {
-        this.random = random;
-        this.gameState = gameState;
-        this.myCar = gameState.player;
-        this.opponent = gameState.opponent;
-
+    public Bot() {
+        this.random = new SecureRandom();
         directionList.add(TURN_LEFT);
         directionList.add(TURN_RIGHT);
     }
 
 
     // INI YANG DIKOTAK KATIK
-    public Command run() {
-
+    public Command run(GameState gameState) {
+        Car myCar = gameState.player;
+        Car opponent = gameState.opponent;
         //inisialisasi list blocks yang bisa dilihat di depan mobil kita
         //ket. p = player, o = opponent
-        List<Object> pBlocks = getBlocksInFront(myCar.position.lane, myCar.position.block);
+        List<Object> pBlocks = getBlocksInFront(myCar.position.lane, myCar.position.block, gameState);
         //List<Object> oBlocks = getBlocksInFront(opponent.position.lane, opponent.position.block);
         List<Object> pNextBlocks = pBlocks.subList(0,1);
         //List<Object> oNextBlocks = oBlocks.subList(0,1);
         if(myCar.damage == 5) {
-            return FIX;
+            return new FixCommand();
         }
         // kalau damage mobil >= 5, langsung baikin
         // karena kalo damage >= 5, mobil langsung gabisa gerak
@@ -76,7 +69,7 @@ public class Bot {
         }
 
         if (myCar.damage >= 5){
-            return FIX;
+            return new FixCommand();
         }
 
         // algoritma sederhana pengecekan apakah ada mud di depan / ada wall di depan
@@ -122,7 +115,7 @@ public class Bot {
      * Returns map of blocks and the objects in the for the current lanes, returns the amount of blocks that can be
      * traversed at max speed.
      **/
-    private List<Object> getBlocksInFront(int lane, int block) {
+    private List<Object> getBlocksInFront(int lane, int block, GameState gameState) {
         List<Lane[]> map = gameState.lanes;
         List<Object> blocks = new ArrayList<>();
         int startBlock = map.get(0)[0].position.block;
