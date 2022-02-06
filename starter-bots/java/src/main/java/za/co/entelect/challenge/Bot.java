@@ -30,8 +30,7 @@ public class Bot {
 
     // power ups
     // [IMPORTANT] instance tweet gapunya default constructor,
-    // jadi ngecallnya pas mau pake aja 
-    // TODO: algoritma buat nentuin tempat yang pas buat pake tweetnya
+    // jadi ngecallnya pas mau pake aja
 
     private final static Command USE_BOOST = new BoostCommand();
     private final static Command USE_OIL = new OilCommand();
@@ -48,31 +47,24 @@ public class Bot {
     }
 
 
-    // INI YANG DIKOTAK KATIK
+    // TODO: algo ganti lane kalau mau dapetin powerup
     public Command run(GameState gameState) {
         Car myCar = gameState.player;
         Car opponent = gameState.opponent;
         //inisialisasi list blocks yang bisa dilihat di depan mobil kita
         //ket. p = player, o = opponent
-        List<Object> pBlocks = getBlocksInFront(myCar.position.lane, myCar.position.block, gameState);
-        List<Object> oBlocks = getBlocksInFront(opponent.position.lane, opponent.position.block, gameState);
-        List<Object> pNextBlocks = pBlocks.subList(0,1);
-        //List<Object> oNextBlocks = oBlocks.subList(0,1);
 
-        if(myCar.damage == 5) {
-            return new FixCommand();
-        }
+        List<Object> pBlocks = getBlocksInFront(myCar.position.lane, myCar.position.block, gameState);
+        List<Object> pNextBlocks = pBlocks.subList(0,1);
+
         // kalau damage mobil >= 5, langsung baikin
         // karena kalo damage >= 5, mobil langsung gabisa gerak
-
+        if (myCar.damage >= 5){
+            return FIX;
+        }
         if (myCar.speed <= 3){
             return ACCELERATE;
         }
-
-        if (myCar.damage >= 5){
-            return new FixCommand();
-        }
-
         // algoritma sederhana pengecekan apakah ada mud di depan / ada wall di depan
         // .contains(ELMT) dipake untuk tau apakah di dalem list ada ELMT tersebut
         if (pBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL)){
@@ -90,23 +82,36 @@ public class Bot {
             }
         }
 
-        if (hasPowerUp(PowerUps.TWEET, myCar.powerups)){
-            if (!(oBlocks.contains(Terrain.MUD) || oBlocks.contains(Terrain.WALL))){
-                return new TweetCommand(opponent.position.lane, opponent.position.block);
-            }
-        }
-        // boost kalo nganggur
-        if (hasPowerUp(PowerUps.BOOST, myCar.powerups)){
+        //  TODO: =============== IMPLEMENTASI ALGO GEDE ===============
+        // boost kalo nganggur dan di depan free
+        if (hasPowerUp(PowerUps.BOOST, myCar.powerups) && isLaneFree(pBlocks)){
             return USE_BOOST;
         }
 
-        // aggression, sementara ngambil dari ref bot, nanti tambahin tweet di sini
-        if (myCar.speed == maxSpeed) {
-            if (hasPowerUp(PowerUps.OIL, myCar.powerups)) {
-                return USE_OIL;
-            }
-            if (hasPowerUp(PowerUps.EMP, myCar.powerups)) {
+        // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
+        if (hasPowerUp(PowerUps.TWEET, myCar.powerups)){
+            return new TweetCommand(opponent.position.lane, opponent.position.block);
+        }
+
+        // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake
+        if (myCar.position.lane == opponent.position.lane && hasPowerUp(PowerUps.OIL, myCar.powerups)){
+            return USE_OIL;
+        }
+
+        // algo emp
+        if (hasPowerUp(PowerUps.EMP, myCar.powerups)){
+            if (myCar.position.lane == opponent.position.lane){
                 return USE_EMP;
+            } else {
+                if (myCar.position.lane - 1 > 1){
+                    if (isLaneFree(getBlocksInFront(myCar.position.lane - 1, myCar.position.block, gameState))) {
+                        return TURN_LEFT;
+                    }
+                } else if (myCar.position.lane + 1 < 4){
+                    if (isLaneFree(getBlocksInFront(myCar.position.lane + 1, myCar.position.block, gameState))){
+                        return TURN_RIGHT;
+                    }
+                }
             }
         }
         // kalo di depan ga ada masalah apa-apa
@@ -146,5 +151,26 @@ public class Bot {
             }
         }
         return false;
+    }
+    //cek apakah lane kosong atau tidak
+    private Boolean isLaneFree(List<Object> Lane) {
+        return !(Lane.contains(Terrain.MUD) || Lane.contains(Terrain.WALL) || Lane.contains(Terrain.OIL_SPILL));
+    }
+
+    private int Obstacles(List<Object> Lane) {
+        int count = 0;
+        for (int i = 0; i < Lane.size(); i++) {
+            if (Lane.get(i).equals(Terrain.MUD) || Lane.get(i).equals(Terrain.WALL) ||
+                    Lane.get(i).equals(Terrain.OIL_SPILL)){
+                count++;
+            }
+        }
+        return count;
+    }
+
+    //cek apakah powerup ada di lane
+    private Boolean isInLane(int lane, int block, GameState gameState, PowerUps powerUpToCheck){
+        List<Object> laneList = getBlocksInFront(lane, block, gameState);
+        return laneList.contains(powerUpToCheck);
     }
 }
