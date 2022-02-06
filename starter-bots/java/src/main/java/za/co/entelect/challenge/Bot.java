@@ -55,9 +55,10 @@ public class Bot {
         //inisialisasi list blocks yang bisa dilihat di depan mobil kita
         //ket. p = player, o = opponent
         List<Object> pBlocks = getBlocksInFront(myCar.position.lane, myCar.position.block, gameState);
-        //List<Object> oBlocks = getBlocksInFront(opponent.position.lane, opponent.position.block);
+        List<Object> oBlocks = getBlocksInFront(opponent.position.lane, opponent.position.block, gameState);
         List<Object> pNextBlocks = pBlocks.subList(0,1);
         //List<Object> oNextBlocks = oBlocks.subList(0,1);
+
         if(myCar.damage == 5) {
             return new FixCommand();
         }
@@ -89,6 +90,11 @@ public class Bot {
             }
         }
 
+        if (hasPowerUp(PowerUps.TWEET, myCar.powerups)){
+            if (!(oBlocks.contains(Terrain.MUD) || oBlocks.contains(Terrain.WALL))){
+                return new TweetCommand(opponent.position.lane, opponent.position.block);
+            }
+        }
         // boost kalo nganggur
         if (hasPowerUp(PowerUps.BOOST, myCar.powerups)){
             return USE_BOOST;
