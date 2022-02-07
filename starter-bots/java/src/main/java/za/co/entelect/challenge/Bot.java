@@ -72,6 +72,10 @@ public class Bot {
         if (myCar.speed <= 3){
             return ACCELERATE;
         }
+
+        if (myCar.damage == 5){
+            return FIX;
+        }
         // algoritma sederhana pengecekan apakah ada mud di depan / ada wall di depan
         // .contains(ELMT) dipake untuk tau apakah di dalem list ada ELMT tersebut
         if (pBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL)){
@@ -116,7 +120,7 @@ public class Bot {
                     return TURN_LEFT;
                 } else {                                //kalau misalnya ngga di situ, bebas
                     return directionList.get(random.nextInt(directionList.size()));
-                    //bisa dicoba ganti pake compareObstacles();
+                    //bisa dicoba ganti pake compareObstacles()
                 }
             }
         }
