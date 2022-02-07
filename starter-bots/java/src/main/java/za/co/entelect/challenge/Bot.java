@@ -1,4 +1,4 @@
-package za.co.entelect.challenge;               
+package za.co.entelect.challenge;
 
 import za.co.entelect.challenge.command.*;
 import za.co.entelect.challenge.entities.*;
@@ -9,14 +9,17 @@ import java.util.*;
 
 import static java.lang.Math.max;
 
-import java.security.SecureRandom;
+
 public class Bot {
 
     // ========== INISIALISASI VARIABEL PRIVATE ==========
     private static final int maxSpeed = 9;
+    private Random random;
+    private GameState gameState;
+    private Car opponent;
+    private Car myCar;
     private List<Command> directionList = new ArrayList<>();
 
-    private final Random random;
     // inisialisasi commands sesuai urutan di game-rules.md
 
     // nothing / accel / decel
@@ -40,21 +43,25 @@ public class Bot {
 
     // ini bagian public
     // user-defined constructor
-    public Bot() {
-        this.random = new SecureRandom();
+    public Bot(Random random, GameState gameState) {
+        this.random = random;
+        this.gameState = gameState;
+        this.myCar = gameState.player;
+        this.opponent = gameState.opponent;
+
         directionList.add(TURN_LEFT);
         directionList.add(TURN_RIGHT);
     }
 
 
-    // TODO: algo ganti lane kalau mau dapetin powerup
-    public Command run(GameState gameState) {
+    // TODO: algo ganti lane kalau mau dapetin powerup (KERJAAN GEDE) + fungsi warning
+    public Command run() {
         Car myCar = gameState.player;
         Car opponent = gameState.opponent;
         //inisialisasi list blocks yang bisa dilihat di depan mobil kita
         //ket. p = player, o = opponent
 
-        List<Object> pBlocks = getBlocksInFront(myCar.position.lane, myCar.position.block, gameState);
+        List<Object> pBlocks = getBlocksInFront(myCar.position.lane, myCar.position.block);
         List<Object> pNextBlocks = pBlocks.subList(0,1);
 
         // kalau damage mobil >= 5, langsung baikin
@@ -84,7 +91,7 @@ public class Bot {
 
         //  TODO: =============== IMPLEMENTASI ALGO GEDE ===============
         // boost kalo nganggur dan di depan free
-        if (hasPowerUp(PowerUps.BOOST, myCar.powerups) && isLaneFree(pBlocks)){
+        if (hasPowerUp(PowerUps.BOOST, myCar.powerups)){
             return USE_BOOST;
         }
 
@@ -103,14 +110,12 @@ public class Bot {
             if (myCar.position.lane == opponent.position.lane){
                 return USE_EMP;
             } else {
-                if (myCar.position.lane - 1 > 1){
-                    if (isLaneFree(getBlocksInFront(myCar.position.lane - 1, myCar.position.block, gameState))) {
-                        return TURN_LEFT;
-                    }
-                } else if (myCar.position.lane + 1 < 4){
-                    if (isLaneFree(getBlocksInFront(myCar.position.lane + 1, myCar.position.block, gameState))){
-                        return TURN_RIGHT;
-                    }
+                if (myCar.position.lane == 1){          //kalau misalnya di lane 1, turn right biar ga minus
+                    return TURN_RIGHT;
+                } else if (myCar.position.lane == 4){   //kalau misalnya di lane 4, turn left biar ga minus
+                    return TURN_LEFT;
+                } else {                                //kalau misalnya ngga di situ, bebas
+                    return directionList.get(random.nextInt(directionList.size()));
                 }
             }
         }
@@ -126,7 +131,7 @@ public class Bot {
      * Returns map of blocks and the objects in the for the current lanes, returns the amount of blocks that can be
      * traversed at max speed.
      **/
-    private List<Object> getBlocksInFront(int lane, int block, GameState gameState) {
+    private List<Object> getBlocksInFront(int lane, int block) {
         List<Lane[]> map = gameState.lanes;
         List<Object> blocks = new ArrayList<>();
         int startBlock = map.get(0)[0].position.block;
@@ -152,10 +157,6 @@ public class Bot {
         }
         return false;
     }
-    //cek apakah lane kosong atau tidak
-    private Boolean isLaneFree(List<Object> Lane) {
-        return !(Lane.contains(Terrain.MUD) || Lane.contains(Terrain.WALL) || Lane.contains(Terrain.OIL_SPILL));
-    }
 
     private int Obstacles(List<Object> Lane) {
         int count = 0;
@@ -169,8 +170,8 @@ public class Bot {
     }
 
     //cek apakah powerup ada di lane
-    private Boolean isInLane(int lane, int block, GameState gameState, PowerUps powerUpToCheck){
-        List<Object> laneList = getBlocksInFront(lane, block, gameState);
+    private Boolean isInLane(int lane, int block, PowerUps powerUpToCheck){
+        List<Object> laneList = getBlocksInFront(lane, block);
         return laneList.contains(powerUpToCheck);
     }
 }
