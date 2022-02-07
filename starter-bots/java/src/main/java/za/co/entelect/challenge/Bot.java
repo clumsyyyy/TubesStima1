@@ -84,7 +84,7 @@ public class Bot {
         if (pNextBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL) || pNextBlocks.contains(Terrain.OIL_SPILL)){
             if (hasPowerUp(PowerUps.LIZARD, myCar.powerups)){
                 return USE_LIZARD;
-            } else if (!pNextBlocks.contains(Terrain.WALL) && myCar.damage <= 3 && passThroughPowUp(pBlocks, PowerUps.BOOST)) {
+            } else if (!pNextBlocks.contains(Terrain.WALL) && myCar.damage <= 3 && passThroughPowUp(pNextBlocks, PowerUps.BOOST)) {
                 return ACCELERATE;
             } else {
                 if (myCar.position.lane == 1){          //kalau misalnya di lane 1, turn right biar ga minus
@@ -99,7 +99,7 @@ public class Bot {
         }
 
         //  TODO: =============== IMPLEMENTASI ALGO GEDE ===============
-        //  TODO: IMPLEMENTASI OIL DIBENERIN, FUNGSI BASIC AVOIDCANCE
+        //  TODO: IMPLEMENTASI OIL DIBENERIN fixed, FUNGSI BASIC AVOIDCANCE
         // boost kalo nganggur dan di depan free
 
         // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
@@ -108,7 +108,7 @@ public class Bot {
         }
 
         // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake dan kita di depan
-        if (myCar.position.lane == opponent.position.lane && hasPowerUp(PowerUps.OIL, myCar.powerups)){
+        if (myCar.position.lane == opponent.position.lane && hasPowerUp(PowerUps.OIL, myCar.powerups) && myCar.position.block > opponent.position.block){
             return USE_OIL;
         }
 
