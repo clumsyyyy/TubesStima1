@@ -66,24 +66,27 @@ public class Bot {
 
         // kalau damage mobil >= 5, langsung baikin
         // karena kalo damage >= 5, mobil langsung gabisa gerak
-        if (myCar.damage >= 5){
+        if (myCar.damage >= 4){
             return FIX;
         }
         if (myCar.speed <= 3){
             return ACCELERATE;
         }
-
-        if (hasPowerUp(PowerUps.BOOST, myCar.powerups)){
-            return USE_BOOST;
+        // kalo obstacle di 20 lane setelahnya cuma ada 1 ato kurang, boost aja
+        if (Obstacles(pBlocks) <= 1) {
+            if (hasPowerUp(PowerUps.BOOST, myCar.powerups)){
+                return USE_BOOST;
+            }
         }
 
         // algoritma sederhana pengecekan apakah ada mud di depan / ada wall di depan
         // .contains(ELMT) dipake untuk tau apakah di dalem list ada ELMT tersebut
-        if (pBlocks.contains(Terrain.MUD) || pBlocks.contains(Terrain.WALL) || pBlocks.contains(Terrain.OIL_SPILL)){
+        if (pNextBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL) || pNextBlocks.contains(Terrain.OIL_SPILL)){
             if (hasPowerUp(PowerUps.LIZARD, myCar.powerups)){
                 return USE_LIZARD;
-            }
-            if (pNextBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL) || pNextBlocks.contains(Terrain.OIL_SPILL)){
+            } else if (!pNextBlocks.contains(Terrain.WALL) && myCar.damage <= 3 && passThroughPowUp(pBlocks, PowerUps.BOOST)) {
+                return ACCELERATE;
+            } else {
                 if (myCar.position.lane == 1){          //kalau misalnya di lane 1, turn right biar ga minus
                     return TURN_RIGHT;
                 } else if (myCar.position.lane == 4){   //kalau misalnya di lane 4, turn left biar ga minus
@@ -96,6 +99,7 @@ public class Bot {
         }
 
         //  TODO: =============== IMPLEMENTASI ALGO GEDE ===============
+        //  TODO: IMPLEMENTASI OIL DIBENERIN, FUNGSI BASIC AVOIDCANCE
         // boost kalo nganggur dan di depan free
 
         // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
@@ -103,14 +107,14 @@ public class Bot {
             return new TweetCommand(opponent.position.lane, opponent.position.block);
         }
 
-        // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake
+        // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake dan kita di depan
         if (myCar.position.lane == opponent.position.lane && hasPowerUp(PowerUps.OIL, myCar.powerups)){
             return USE_OIL;
         }
 
         // algo emp
         if (hasPowerUp(PowerUps.EMP, myCar.powerups)){
-            if (myCar.position.lane == opponent.position.lane){
+            if (opponent.position.lane <= myCar.position.lane + 1 && opponent.position.lane >= myCar.position.lane - 1 && opponent.position.block > myCar.position.block){
                 return USE_EMP;
             } else {
                 if (myCar.position.lane == 1){          //kalau misalnya di lane 1, turn right biar ga minus
@@ -193,4 +197,21 @@ public class Bot {
             }
         }
     }
+
+    // return apakah blocks yang akan dilewati ronde itu mengandung objek yg kita cari
+    private boolean passThroughPowUp(List<Object> Lane, PowerUps powerUp) {
+        int i = 0;
+        boolean found = false;
+        while (i < myCar.speed && !found) {
+            if (Lane.get(i).equals(powerUp)) {
+                found = true;
+            } else {
+                i += 1;
+            }
+        }
+        return found;
+    }
+
 }
+
+
