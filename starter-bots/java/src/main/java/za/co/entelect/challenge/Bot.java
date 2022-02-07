@@ -116,6 +116,7 @@ public class Bot {
                     return TURN_LEFT;
                 } else {                                //kalau misalnya ngga di situ, bebas
                     return directionList.get(random.nextInt(directionList.size()));
+                    //bisa dicoba ganti pake compareObstacles();
                 }
             }
         }
@@ -168,10 +169,24 @@ public class Bot {
         }
         return count;
     }
+    // car lane yang jumlah obstaclesnya paling dikit
+    // CALL KALAU DIA GA DI LANE 1 ATAU 4
+    // TODO: pake ini kok malah kalah ya? terlalu defensif kah?
 
-    //cek apakah powerup ada di lane
-    private Boolean isInLane(int lane, int block, PowerUps powerUpToCheck){
-        List<Object> laneList = getBlocksInFront(lane, block);
-        return laneList.contains(powerUpToCheck);
+    private Command compareObstacles(){
+        int Lcount = Obstacles(getBlocksInFront(myCar.position.lane - 1, myCar.position.block));
+        int Ccount = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block));
+        int Rcount = Obstacles(getBlocksInFront(myCar.position.lane + 1, myCar.position.block));
+        if (Lcount >= Ccount && Lcount >= Rcount) {
+            return TURN_LEFT;
+        } else if (Rcount >= Ccount && Rcount >= Lcount) {
+            return TURN_RIGHT;
+        } else {
+            if (hasPowerUp(PowerUps.BOOST, myCar.powerups)) {
+                return USE_BOOST;
+            } else {
+                return ACCELERATE;
+            }
+        }
     }
 }
