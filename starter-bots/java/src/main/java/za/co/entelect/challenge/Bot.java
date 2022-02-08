@@ -61,9 +61,14 @@ public class Bot {
         Car opponent = gameState.opponent;
         //inisialisasi list blocks yang bisa dilihat di depan mobil kita
         //ket. p = player, o = opponent
-
+        List <Object> pNextBlocks;
         List<Object> pBlocks = getBlocksInFront(myCar.position.lane, myCar.position.block);
-        List<Object> pNextBlocks = pBlocks.subList(0, min(myCar.speed, trackLength - myCar.position.block + 1));
+        if (pBlocks.size() < min(myCar.speed, trackLength - myCar.position.block + 1)) {
+            pNextBlocks = pBlocks.subList(0, min(myCar.speed, trackLength - myCar.position.block + 1));
+        } else {
+            pNextBlocks = pBlocks;
+        }
+
 
         // kalau damage mobil >= 5, langsung baikin
         // karena kalo damage >= 5, mobil langsung gabisa gerak
