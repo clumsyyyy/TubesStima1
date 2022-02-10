@@ -339,8 +339,88 @@ public class Bot {
             }
         }
         if (Obstacles(currentLane) > 0) {
-            // ini besok jatah aing
+        // prioritaskan pengunaan lizard, kalau ada boost dan depannya bukan wall ya hajar aja, sisanya dodge
+        // kalau gabisa dodge, pilih yg mud/oil baru wall
+            if (hasPowerUp(PowerUps.LIZARD, myCar.powerups)) {
+                return USE_LIZARD;
+            }
+            // wall nilainya 10, jadi ini artinya kalau dia ada boost langsung pake biar best case dapet max_speed
+            if (hasPowerUp(PowerUps.BOOST, myCar.powerups) && Obstacles(currentLane) < 10) {
+                return USE_BOOST;
+            }
+            int choice = pickLane(myCar, leftLane, currentLane, rightLane);
+                switch (choice) {
+                    case -1:
+                        return TURN_LEFT;
+                    case 0:
+                        int no_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed));
+                        int with_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, nextSpeedState(myCar)));
+                        if (with_accelerate <= no_accelerate && myCar.boosting == false) {
+                            return ACCELERATE;
+                        } else {
+                            return NOTHING;
+                        }
+                    case 1:
+                        return TURN_RIGHT;
+                    case 5:
+                        // bandingin powerup yang ada di kiri dan tengah
+                        int atLeftLandingBlock = leftLaneBlock(myCar);
+                        int atCurrentLandingBlock = currentLaneBlock(myCar);
+                        int atAccelerateLandingBlock = accelerateLaneBlock(myCar);
+                        // kalau sama jenisnya, cek dulu mendingan ngebut atau engga
+                        if (atCurrentLandingBlock >= atLeftLandingBlock) {
+                            no_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed));
+                            with_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, nextSpeedState(myCar)));
+                            if (with_accelerate <= no_accelerate && myCar.boosting == false) {
+                                return ACCELERATE;
+                            } else {
+                                return NOTHING;
+                            }
+                        } else {
+                            return TURN_LEFT;
+                        }
+                    case 10:
+                        // bandingin powerup yang ada di kanan dan tengah
+                        int atRightLandingBlock = leftLaneBlock(myCar);
+                        atCurrentLandingBlock = currentLaneBlock(myCar);
+                        atAccelerateLandingBlock = accelerateLaneBlock(myCar);
+                        // kalau sama jenisnya, cek dulu mendingan ngebut atau engga
+                        if (atCurrentLandingBlock >= atRightLandingBlock) {
+                            no_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed));
+                            with_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, nextSpeedState(myCar)));
+                            if (with_accelerate <= no_accelerate && myCar.boosting == false) {
+                                return ACCELERATE;
+                            } else {
+                                return NOTHING;
+                            }
+                        } else {
+                            return TURN_RIGHT;
+                        }
+                    case 15:
+                        // bandingin powerup yang ada di kiri dan tengah
+                        atLeftLandingBlock = leftLaneBlock(myCar);
+                        atCurrentLandingBlock = currentLaneBlock(myCar);
+                        atRightLandingBlock = rightLaneBlock(myCar);
+                        atAccelerateLandingBlock = accelerateLaneBlock(myCar);
+                        // kalau sama jenisnya, cek dulu mendingan ngebut atau engga
+                        if (atCurrentLandingBlock >= Math.max(atLeftLandingBlock, atRightLandingBlock)) {
+                            no_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed));
+                            with_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, nextSpeedState(myCar)));
+                            if (with_accelerate <= no_accelerate && myCar.boosting == false) {
+                                return ACCELERATE;
+                            } else {
+                                return NOTHING;
+                            }
+                        } else if (atLeftLandingBlock > Math.max(atCurrentLandingBlock, atRightLandingBlock)) {
+                            return TURN_LEFT;
+                        } else if (atRightLandingBlock > Math.max(atCurrentLandingBlock, atLeftLandingBlock)) {
+                            return TURN_RIGHT;
+                        }
+                    default:
+                        return NOTHING;
+                }
         }
+        return NOTHING;
     }
 
 
