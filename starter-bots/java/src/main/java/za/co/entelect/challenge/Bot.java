@@ -74,77 +74,43 @@ public class Bot {
         List <Object> accelLane = getBlocksInFront(myCar.position.lane, myCar.position.block, nextSpeedState(myCar));
 
         // implementasi algoritma kalau di depan lane kosong / tidak ada obstacle
-
+        int choice = compareLanes(myCar, leftLane, currentLane, rightLane);
         if (Obstacles(currentLane) == 0){
             if (isInSameLane(myCar, opponent)){
-
+                sameLaneCommand(choice, myCar, opponent, currentLane, pNextBlocks);
+            } else {
+                diffLaneCommand(choice, myCar, opponent, currentLane, pNextBlocks);
             }
-        }
-        // kalau damage mobil >= 5, langsung baikin
-        // karena kalo damage >= 5, mobil langsung gabisa gerak
-        if (myCar.damage >= 4){
-            return FIX;
-        }
-        if (myCar.speed <= 3){
-            return ACCELERATE;
-        }
-
-        if (Obstacles(currentLane) <= 1) {
-            if (hasPowerUp(PowerUps.BOOST, myCar.powerups)){
+        } else {
+            // kalau damage mobil >= 5, langsung baikin
+            // karena kalo damage >= 5, mobil langsung gabisa gerak
+            if (hasPowerUp(PowerUps.LIZARD, myCar.powerups)) {
+                return USE_LIZARD;
+            }
+            // wall nilainya 10, jadi ini artinya kalau dia ada boost langsung pake biar best case dapet max_speed
+            if (hasPowerUp(PowerUps.BOOST, myCar.powerups) && Obstacles(currentLane) < 10) {
                 return USE_BOOST;
             }
-        }
 
-        // algoritma sederhana pengecekan apakah ada mud di depan / ada wall di depan
-        // .contains(ELMT) dipake untuk tau apakah di dalem list ada ELMT tersebut
-        if (pNextBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL) || pNextBlocks.contains(Terrain.OIL_SPILL)){
-            if (hasPowerUp(PowerUps.LIZARD, myCar.powerups)){
-                return USE_LIZARD;
-            } else if (!pNextBlocks.contains(Terrain.WALL) && myCar.damage <= 3 && passThroughPowUp(pNextBlocks, PowerUps.BOOST)) {
-                return ACCELERATE;
-            } else {
-                if (myCar.position.lane == 1){          //kalau misalnya di lane 1, turn right biar ga minus
-                    return compareTwoLanes(1);
-                } else if (myCar.position.lane == 4){   //kalau misalnya di lane 4, turn left biar ga minus
-                    return compareTwoLanes(-1);
-                } else {                                //kalau misalnya ngga di situ, bebas
-                    return compareObstacles();
-                    //return directionList.get(random.nextInt(directionList.size()));
+            // algoritma sederhana pengecekan apakah ada mud di depan / ada wall di depan
+            // .contains(ELMT) dipake untuk tau apakah di dalem list ada ELMT tersebut
+            if (pNextBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL) || pNextBlocks.contains(Terrain.OIL_SPILL)){
+                if (hasPowerUp(PowerUps.LIZARD, myCar.powerups)){
+                    return USE_LIZARD;
+                } else if (!pNextBlocks.contains(Terrain.WALL) && myCar.damage <= 3 && passThroughPowUp(pNextBlocks, PowerUps.BOOST)) {
+                    return ACCELERATE;
+                } else {
+                    if (myCar.position.lane == 1){          //kalau misalnya di lane 1, turn right biar ga minus
+                        return compareTwoLanes(1);
+                    } else if (myCar.position.lane == 4){   //kalau misalnya di lane 4, turn left biar ga minus
+                        return compareTwoLanes(-1);
+                    } else {                                //kalau misalnya ngga di situ, bebas
+                        return compareObstacles();
+                        //return directionList.get(random.nextInt(directionList.size()));
+                    }
                 }
             }
-        }
-
-        //  TODO: =============== IMPLEMENTASI ALGO GEDE ===============
-        // boost kalo nganggur dan di depan free
-
-        // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
-        if (hasPowerUp(PowerUps.TWEET, myCar.powerups)){
-            return new TweetCommand(opponent.position.lane, opponent.position.block);
-        }
-
-        // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake
-        if (myCar.position.lane == opponent.position.lane && hasPowerUp(PowerUps.OIL, myCar.powerups)
-                && myCar.position.block > opponent.position.block){
-            return USE_OIL;
-        }
-
-        // algo emp
-        if (hasPowerUp(PowerUps.EMP, myCar.powerups)){
-            if (opponent.position.lane <= myCar.position.lane + 1 && opponent.position.lane >= myCar.position.lane - 1
-                    && opponent.position.block > myCar.position.block){
-                return USE_EMP;
-            } else {
-                // TODO: benahin algo ini biar ga sembarang belok
-                if (myCar.position.lane == 1){          //kalau misalnya di lane 1, turn right biar ga minus
-                    return compareTwoLanes(1);
-                } else if (myCar.position.lane == 4){   //kalau misalnya di lane 4, turn left biar ga minus
-                    return compareTwoLanes(-1);
-                } else {                                //kalau misalnya ngga di situ, bebas
-                    //return directionList.get(random.nextInt(directionList.size()));
-                    return compareObstacles();
-                    //bisa dicoba ganti pake compareObstacles()
-                }
-            }
+            return switching(choice);
         }
         // kalo di depan ga ada masalah apa-apa
         // g a s
@@ -414,5 +380,147 @@ public class Bot {
             }
         }
         return 0;
+    }
+    private Command sameLaneCommand(int choice, Car myCar, Car opponent, List<Object> currentLane, List<Object> pNextBlocks){
+        if (myCar.boosting){
+            return (choice == -1 ? TURN_LEFT : TURN_RIGHT);
+        }
+
+        if (((myCar.damage >= 1 && myCar.damage <= 3) && (carGap(myCar, opponent) > opponent.speed))
+                || myCar.damage > 3){
+            return FIX;
+        }
+
+        if (myCar.speed <= 3){
+            return ACCELERATE;
+        }
+
+        if (hasPowerUp(PowerUps.BOOST, myCar.powerups) && Obstacles(currentLane) < 10 && !myCar.boosting) {
+            return USE_BOOST;
+        }
+
+        // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
+        if (hasPowerUp(PowerUps.TWEET, myCar.powerups)){
+            return new TweetCommand(opponent.position.lane, opponent.position.block);
+        }
+
+        // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake
+        if (myCar.position.lane == opponent.position.lane && hasPowerUp(PowerUps.OIL, myCar.powerups)
+                && myCar.position.block > opponent.position.block){
+            return USE_OIL;
+        }
+
+        return switching(choice);
+    }
+
+    private Command diffLaneCommand(int choice, Car myCar, Car opponent, List<Object> currentLane, List<Object> pNextBlocks){
+        if (myCar.boosting){
+            return (choice == -1 ? TURN_LEFT : TURN_RIGHT);
+        }
+
+        if (((myCar.damage >= 1 && myCar.damage <= 2) && (carGap(myCar, opponent) > opponent.speed))
+                || myCar.damage > 2){
+            return FIX;
+        }
+
+        if (myCar.speed <= 3){
+            return ACCELERATE;
+        }
+
+        if (hasPowerUp(PowerUps.BOOST, myCar.powerups) && Obstacles(currentLane) < 10 && !myCar.boosting
+        && carGap(myCar, opponent) <= 20){
+            return USE_BOOST;
+        }
+
+        // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
+        if (hasPowerUp(PowerUps.TWEET, myCar.powerups)){
+            return new TweetCommand(opponent.position.lane, opponent.position.block);
+        }
+
+        if (hasPowerUp(PowerUps.EMP, myCar.powerups) && isInEMPRange(myCar, opponent)) {
+            return USE_EMP;
+        }
+
+        // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake
+        if (myCar.position.lane == opponent.position.lane && hasPowerUp(PowerUps.OIL, myCar.powerups)
+                && myCar.position.block > opponent.position.block){
+            return USE_OIL;
+        }
+
+        return switching(choice);
+
+    }
+
+    private Command switching(int choice){
+        switch (choice) {
+            case -1:
+                return TURN_LEFT;
+            case 0:
+                int no_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed));
+                int with_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, nextSpeedState(myCar)));
+                if (with_accelerate <= no_accelerate && myCar.boosting == false) {
+                    return ACCELERATE;
+                } else {
+                    return NOTHING;
+                }
+            case 1:
+                return TURN_RIGHT;
+            case 5:
+                // bandingin powerup yang ada di kiri dan tengah
+                int atLeftLandingBlock = LaneBlock(myCar, "LEFT");
+                int atCurrentLandingBlock = LaneBlock(myCar, "CENTER");
+                int atAccelerateLandingBlock = accelerateLaneBlock(myCar);
+                // kalau sama jenisnya, cek dulu mendingan ngebut atau engga
+                if (atCurrentLandingBlock >= atLeftLandingBlock) {
+                    no_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed));
+                    with_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, nextSpeedState(myCar)));
+                    if (with_accelerate <= no_accelerate && myCar.boosting == false) {
+                        return ACCELERATE;
+                    } else {
+                        return NOTHING;
+                    }
+                } else {
+                    return TURN_LEFT;
+                }
+            case 10:
+                // bandingin powerup yang ada di kanan dan tengah
+                int atRightLandingBlock = LaneBlock(myCar, "LEFT");
+                atCurrentLandingBlock = LaneBlock(myCar, "CENTER");
+                atAccelerateLandingBlock = accelerateLaneBlock(myCar);
+                // kalau sama jenisnya, cek dulu mendingan ngebut atau engga
+                if (atCurrentLandingBlock >= atRightLandingBlock) {
+                    no_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed));
+                    with_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, nextSpeedState(myCar)));
+                    if (with_accelerate <= no_accelerate && myCar.boosting == false) {
+                        return ACCELERATE;
+                    } else {
+                        return NOTHING;
+                    }
+                } else {
+                    return TURN_RIGHT;
+                }
+            case 15:
+                // bandingin powerup yang ada di kiri dan tengah
+                atLeftLandingBlock = LaneBlock(myCar, "LEFT");
+                atCurrentLandingBlock = LaneBlock(myCar, "CENTER");
+                atRightLandingBlock = LaneBlock(myCar, "RIGHT");
+                atAccelerateLandingBlock = accelerateLaneBlock(myCar);
+                // kalau sama jenisnya, cek dulu mendingan ngebut atau engga
+                if (atCurrentLandingBlock >= Math.max(atLeftLandingBlock, atRightLandingBlock)) {
+                    no_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed));
+                    with_accelerate = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, nextSpeedState(myCar)));
+                    if (with_accelerate <= no_accelerate && myCar.boosting == false) {
+                        return ACCELERATE;
+                    } else {
+                        return NOTHING;
+                    }
+                } else if (atLeftLandingBlock > Math.max(atCurrentLandingBlock, atRightLandingBlock)) {
+                    return TURN_LEFT;
+                } else if (atRightLandingBlock > Math.max(atCurrentLandingBlock, atLeftLandingBlock)) {
+                    return TURN_RIGHT;
+                }
+            default:
+                return NOTHING;
+        }
     }
 }
