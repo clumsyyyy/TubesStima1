@@ -86,7 +86,7 @@ public class Bot {
             return FIX;
         }
 
-        if (myCar.speed <= 4){
+        if (myCar.speed <= 3){
             return ACCELERATE;
         }
         if (h.Obstacles(currentLane) == 0){
@@ -96,15 +96,16 @@ public class Bot {
                 diffLaneCommand(choice, myCar, opponent, currentLane, pNextBlocks);
             }
         } else {
-            // kalau damage mobil >= 5, langsung baikin
-            // karena kalo damage >= 5, mobil langsung gabisa gerak
-            if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups)) {
-                return USE_LIZARD;
+            if (myCar.damage >= 4){
+                return FIX;
             }
+
+            if (myCar.speed <= 3){
+                return ACCELERATE;
+            }
+
             // wall nilainya 10, jadi ini artinya kalau dia ada boost langsung pake biar best case dapet max_speed
-            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane) < 10) {
-                return USE_BOOST;
-            }
+
 
             // algoritma sederhana pengecekan apakah ada mud di depan / ada wall di depan
             // .contains(ELMT) dipake untuk tau apakah di dalem list ada ELMT tersebut
@@ -123,6 +124,11 @@ public class Bot {
                     }
                 }
             }
+
+            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane) < 10) {
+                return USE_BOOST;
+            }
+
             return ACCELERATE;
         }
         // kalo di depan ga ada masalah apa-apa
@@ -215,8 +221,6 @@ public class Bot {
         return found;
     }
 
-
-
     private Command sameLaneCommand(int choice, Car myCar, Car opponent, List<Object> currentLane, List<Object> pNextBlocks){
         if (myCar.damage >= 4){
             return FIX;
@@ -299,7 +303,6 @@ public class Bot {
             return USE_BOOST;
         }
 
-        // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
         if (h.hasPowerUp(PowerUps.TWEET, myCar.powerups)){
             return new TweetCommand(opponent.position.lane, opponent.position.block);
         }
