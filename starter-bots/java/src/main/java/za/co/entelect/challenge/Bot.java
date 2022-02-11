@@ -65,7 +65,7 @@ public class Bot {
         List <Object> rightLane = new ArrayList<Object>();
         List <Object> currentLane = getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed);
 
-        if (currentLane.size() < min(myCar.speed, trackLength - myCar.position.block + 1)) {
+        if (currentLane.size() >= min(myCar.speed, trackLength - myCar.position.block + 1)) {
             pNextBlocks = currentLane.subList(0, min(myCar.speed, trackLength - myCar.position.block + 1));
         } else {
             pNextBlocks = currentLane;
@@ -307,10 +307,23 @@ public class Bot {
             return new TweetCommand(opponent.position.lane, opponent.position.block);
         }
 
-        if (h.hasPowerUp(PowerUps.EMP, myCar.powerups) && Math.abs(myCar.position.block - opponent.position.block) <= 1) {
-            return USE_EMP;
+        if (h.hasPowerUp(PowerUps.EMP, myCar.powerups)){
+            if (opponent.position.lane <= myCar.position.lane + 1 && opponent.position.lane >= myCar.position.lane - 1
+                    && opponent.position.block > myCar.position.block){
+                return USE_EMP;
+            } else {
+                // TODO: benahin algo ini biar ga sembarang belok
+                if (myCar.position.lane == 1){          //kalau misalnya di lane 1, turn right biar ga minus
+                    return compareTwoLanes(1);
+                } else if (myCar.position.lane == 4){   //kalau misalnya di lane 4, turn left biar ga minus
+                    return compareTwoLanes(-1);
+                } else {                                //kalau misalnya ngga di situ, bebas
+                    //return directionList.get(random.nextInt(directionList.size()));
+                    return compareObstacles();
+                    //bisa dicoba ganti pake compareObstacles()
+                }
+            }
         }
-
 
         // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake
         if (myCar.position.lane == opponent.position.lane && h.hasPowerUp(PowerUps.OIL, myCar.powerups)
