@@ -8,6 +8,8 @@ import za.co.entelect.challenge.enums.Terrain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static java.lang.Math.min;
 import static java.lang.Math.max;
@@ -28,6 +30,8 @@ public class Helper {
     public int max3(int a, int b, int c){
         return (max(a, max(b, c)));
     }
+
+
     public Boolean hasPowerUp(PowerUps powerUpToCheck, PowerUps[] available) {
         for (PowerUps powerUp: available) {
             if (powerUp.equals(powerUpToCheck)) {
@@ -221,4 +225,16 @@ public class Helper {
         }
         return count;
     }
+
+  public boolean hasCyberTruck(int flag) {
+      List<Lane[]> map = gameState.lanes;
+      Lane[] laneList = map.get(myCar.position.lane - 1 + flag);
+      int count = 0;
+      for (int i = 0; i < laneList.length; i++) {
+          if (laneList[i].isOccupiedByCyberTruck){
+              return true;
+          }
+      }
+      return false;
+  }
 }
