@@ -14,6 +14,7 @@ public class Bot {
 
     // ========== INISIALISASI VARIABEL PRIVATE ==========
     private static final int maxSpeed = 9;
+    private static final int trackLength = 500;
     private Random random;
     private GameState gameState;
     private Car opponent;
@@ -60,9 +61,14 @@ public class Bot {
         Car opponent = gameState.opponent;
         //inisialisasi list blocks yang bisa dilihat di depan mobil kita
         //ket. p = player, o = opponent
-
+        List <Object> pNextBlocks;
         List<Object> pBlocks = getBlocksInFront(myCar.position.lane, myCar.position.block);
-        List<Object> pNextBlocks = pBlocks.subList(0, min(myCar.speed, 1500 - myCar.position.block));
+        if (pBlocks.size() < min(myCar.speed, trackLength - myCar.position.block + 1)) {
+            pNextBlocks = pBlocks.subList(0, min(myCar.speed, trackLength - myCar.position.block + 1));
+        } else {
+            pNextBlocks = pBlocks;
+        }
+
 
         // kalau damage mobil >= 5, langsung baikin
         // karena kalo damage >= 5, mobil langsung gabisa gerak
@@ -72,7 +78,6 @@ public class Bot {
         if (myCar.speed <= 3){
             return ACCELERATE;
         }
-        // kalo obstacle di 20 lane setelahnya cuma ada 1 ato kurang, boost aja
         if (Obstacles(pBlocks) <= 1) {
             if (hasPowerUp(PowerUps.BOOST, myCar.powerups)){
                 return USE_BOOST;
@@ -88,9 +93,9 @@ public class Bot {
                 return ACCELERATE;
             } else {
                 if (myCar.position.lane == 1){          //kalau misalnya di lane 1, turn right biar ga minus
-                    return TURN_RIGHT;
+                    return compareTwoLanes(1);
                 } else if (myCar.position.lane == 4){   //kalau misalnya di lane 4, turn left biar ga minus
-                    return TURN_LEFT;
+                    return compareTwoLanes(-1);
                 } else {                                //kalau misalnya ngga di situ, bebas
                     return compareObstacles();
                     //return directionList.get(random.nextInt(directionList.size()));
@@ -107,20 +112,23 @@ public class Bot {
             return new TweetCommand(opponent.position.lane, opponent.position.block);
         }
 
-        // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake dan kita di depan
-        if (myCar.position.lane == opponent.position.lane && hasPowerUp(PowerUps.OIL, myCar.powerups) && myCar.position.block > opponent.position.block){
+        // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake
+        if (myCar.position.lane == opponent.position.lane && hasPowerUp(PowerUps.OIL, myCar.powerups)
+                && myCar.position.block > opponent.position.block){
             return USE_OIL;
         }
 
         // algo emp
         if (hasPowerUp(PowerUps.EMP, myCar.powerups)){
-            if (opponent.position.lane <= myCar.position.lane + 1 && opponent.position.lane >= myCar.position.lane - 1 && opponent.position.block > myCar.position.block){
+            if (opponent.position.lane <= myCar.position.lane + 1 && opponent.position.lane >= myCar.position.lane - 1
+                    && opponent.position.block > myCar.position.block){
                 return USE_EMP;
             } else {
+                // TODO: benahin algo ini biar ga sembarang belok
                 if (myCar.position.lane == 1){          //kalau misalnya di lane 1, turn right biar ga minus
-                    return TURN_RIGHT;
+                    return compareTwoLanes(1);
                 } else if (myCar.position.lane == 4){   //kalau misalnya di lane 4, turn left biar ga minus
-                    return TURN_LEFT;
+                    return compareTwoLanes(-1);
                 } else {                                //kalau misalnya ngga di situ, bebas
                     //return directionList.get(random.nextInt(directionList.size()));
                     return compareObstacles();
@@ -152,7 +160,6 @@ public class Bot {
             }
 
             blocks.add(laneList[i].terrain);
-
         }
         return blocks;
     }
@@ -177,18 +184,43 @@ public class Bot {
         }
         return count;
     }
-    // car lane yang jumlah obstaclesnya paling dikit
+    // membandingkan obstacles dari 3 lane
     // CALL KALAU DIA GA DI LANE 1 ATAU 4
-    // TODO: pake ini kok malah kalah ya? terlalu defensif kah?
-
     private Command compareObstacles(){
-        int Lcount = Obstacles(getBlocksInFront(myCar.position.lane - 1, myCar.position.block).subList(0, min(myCar.speed, 1500 - myCar.position.block)));
-        int Ccount = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block).subList(0, min(myCar.speed, 1500 - myCar.position.block)));
-        int Rcount = Obstacles(getBlocksInFront(myCar.position.lane + 1, myCar.position.block).subList(0, min(myCar.speed, 1500 - myCar.position.block)));
-        if (Lcount <= Ccount && Lcount <= Rcount) {
-            return TURN_LEFT;
-        } else if (Rcount <= Ccount && Rcount <= Lcount) {
+        int Lcount = Obstacles(getBlocksInFront(myCar.position.lane - 1, myCar.position.block)
+                .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
+        int Ccount = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block)
+                .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
+        int Rcount = Obstacles(getBlocksInFront(myCar.position.lane + 1, myCar.position.block)
+                .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
+
+        if (Ccount < Lcount && Ccount < Rcount) {
+            if (hasPowerUp(PowerUps.BOOST, myCar.powerups)) {
+                return USE_BOOST;
+            } else {
+                return ACCELERATE;
+            }
+        } else if (Rcount < Ccount && Rcount < Lcount) {
             return TURN_RIGHT;
+        } else if (Lcount < Ccount && Lcount < Rcount) {
+            return TURN_LEFT;
+        } else {
+            return ACCELERATE;
+        }
+    }
+    // membandingkan obstacles 2 lane (kiri/kanan, flag = -1 berarti kiri, flag = +1 berarti kanan)
+    private Command compareTwoLanes(int flag){
+        int Ccount = Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block)
+                .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
+        int Pcount = Obstacles(getBlocksInFront(myCar.position.lane + flag, myCar.position.block)
+                .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
+
+        if (Pcount < Ccount){
+            if (flag == -1){
+                return TURN_LEFT;
+            } else {
+                return TURN_RIGHT;
+            }
         } else {
             if (hasPowerUp(PowerUps.BOOST, myCar.powerups)) {
                 return USE_BOOST;
@@ -211,7 +243,6 @@ public class Bot {
         }
         return found;
     }
-
 }
 
 
