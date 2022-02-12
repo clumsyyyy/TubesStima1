@@ -6,6 +6,7 @@ import za.co.entelect.challenge.entities.Lane;
 import za.co.entelect.challenge.enums.PowerUps;
 import za.co.entelect.challenge.enums.Terrain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Math.min;
@@ -64,48 +65,48 @@ public class Helper {
 
         cCount = Obstacles(curr);
 
-        if (LPos && RPos) { //kalau memungkinkan untuk pindah kiri an kanan
+        if (LPos && RPos) { //kalau memungkinkan untuk pindah kiri dan kanan
             if (min3(lCount, rCount, cCount) == lCount){
                 if (lCount == cCount){
                     if (lCount == rCount){
-                        return "ALL"; // return 15 untuk membandingkan semua lane
+                        return "ALL"; // return ALL untuk membandingkan semua lane
                     } else {
-                        return "CURR_LEFT"; // return 5 untuk membandingkan lane curr dan kiri
+                        return "CURR_LEFT"; // return CURR_LEFT untuk membandingkan lane curr dan kiri
                     }
                 } else {
-                    return "TURN_LEFT"; // return -1 kalau lane kiri yang paling sedikit (langsung belok kiri)
+                    return "TURN_LEFT"; // return TURN_LEFT kalau lane kiri yang paling sedikit (langsung belok kiri)
                 }
             } else if (min3(lCount, rCount, cCount) == cCount){
                 if (cCount == rCount){
-                    return "CURR_RIGHT"; // return 10 untuk membandingkan lane curr dan kanan
+                    return "CURR_RIGHT"; // return CURR_RIGHT untuk membandingkan lane curr dan kanan
                 } else {
-                    return "STAY"; // return 0 untuk stay in lane
+                    return "STAY"; // return STAY untuk stay in lane
                 }
             } else {
-                return "TURN_RIGHT"; // return 1 kalau belok kanan
+                return "TURN_RIGHT"; // return TURN_RIGHT kalau belok kanan
             }
         } else if (LPos && !RPos){ //kalau memungkinkan untuk pindah kiri saja
             if (min(lCount, cCount) == lCount){
                 if (lCount == cCount){
-                    return "CURR_LEFT"; //return 5 untuk membandingkan lane curr dan kiri
+                    return "CURR_LEFT"; //return CURR_LEFT untuk membandingkan lane curr dan kiri
                 } else {
-                    return "TURN_LEFT"; //return 1 untuk belok kiri
+                    return "TURN_LEFT"; //return TURN_LEFT untuk belok kiri
                 }
             } else {
-                return "STAY"; // return 0 untuk stay in lane
+                return "STAY"; // return STAY untuk stay in lane
             }
         } else if (!LPos && RPos){ //kalau emmungkinkan untuk pindah kanan saja
             if (min(rCount, cCount) == rCount){
                 if (rCount == cCount){
-                    return "CURR_RIGHT"; //return 10 untuk membandingkan lane curr dan kanan
+                    return "CURR_RIGHT"; //return CURR_RIGHT untuk membandingkan lane curr dan kanan
                 } else {
-                    return "TURN_RIGHT"; //return 1 untuk belok kanan
+                    return "TURN_RIGHT"; //return TURN_RIGHT untuk belok kanan
                 }
             } else {
-                return "STAY"; // return 0 untuk stay in lane
+                return "STAY"; // return STAY untuk stay in lane
             }
         }
-        return "STAY";//return 0 default untuk stay in lane
+        return "STAY";//return STAY default untuk stay in lane
     }
 
     public int nextSpeedState (Car targetCar) {
@@ -151,7 +152,7 @@ public class Helper {
         }
         List<Lane[]> map = gameState.lanes;
         Lane[] laneList = map.get(myCar.position.lane - 1 + flag); // tidak dikurangi 1 soalnya dia basisnya 0 (-1) dan dia ke kanan (+1)
-        int landingPosition = myCar.speed; // harus ngecek ini basis 0 atau engga
+        int landingPosition = myCar.speed + 1; // harus ngecek ini basis 0 atau engga
         if (laneList[landingPosition].terrain.equals(Terrain.BOOST)) {
             return 1;
         } else if (laneList[landingPosition].terrain.equals(Terrain.LIZARD)) {
@@ -170,7 +171,7 @@ public class Helper {
     public int accelerateLaneBlock (Car myCar, GameState gameState) {
         List<Lane[]> map = gameState.lanes;
         Lane[] laneList = map.get(myCar.position.lane - 1); // dikurangi 1 soalnya dia basisnya 0
-        int landingPosition = myCar.position.block +  nextSpeedState(myCar); // harus ngecek ini basis 0 atau engga
+        int landingPosition = myCar.position.block +  nextSpeedState(myCar) + 1; // harus ngecek ini basis 0 atau engga
         if (laneList[landingPosition].terrain.equals(Terrain.BOOST)) {
             return 1;
         } else if (laneList[landingPosition].terrain.equals(Terrain.LIZARD)) {
@@ -184,5 +185,40 @@ public class Helper {
         } else {
             return 9;
         }
+    }
+
+    public int obstacleLandingBlock(String direction) {
+        int flag = 0;
+        if (direction.equals("LEFT")){
+            flag = -1;
+        } else if (direction.equals("RIGHT")){
+            flag = 1;
+        }
+        List<Lane[]> map = gameState.lanes;
+        Lane[] laneList = map.get(myCar.position.lane - 1 + flag); // tidak dikurangi 1 soalnya dia basisnya 0 (-1) dan dia ke kanan (+1)
+        int landingPosition = myCar.speed + 1; // harus ngecek ini basis 0 atau engga
+        if (laneList[landingPosition].terrain.equals(Terrain.OIL_SPILL)) {
+            return 1;
+        } else if (laneList[landingPosition].terrain.equals(Terrain.MUD)) {
+            return 2;
+        } else if (laneList[landingPosition].terrain.equals(Terrain.WALL)) {
+            return 3;
+        } else {
+            return 0;
+        }
+    }
+
+    public int countPowerUps(List<Object> laneList){
+        int count = 0;
+        for (int i = 0; i < laneList.size(); i++) {
+            if (laneList.get(i).equals(Terrain.OIL_POWER) ||
+                    laneList.get(i).equals(Terrain.EMP) ||
+                    laneList.get(i).equals(Terrain.BOOST) ||
+                    laneList.get(i).equals(Terrain.LIZARD) ||
+                    laneList.get(i).equals(Terrain.TWEET)) {
+                count++;
+            }
+        }
+        return count;
     }
 }

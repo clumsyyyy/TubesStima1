@@ -81,9 +81,9 @@ public class Comparison {
         List<Lane[]> map = gameState.lanes;
         List<Object> blocks = new ArrayList<>();
         int startBlock = map.get(0)[0].position.block;
-
+        int blockParam = block - 1;
         Lane[] laneList = map.get(lane - 1);
-        for (int i = max(block - startBlock, 0); i <= block - startBlock + speed; i++) {
+        for (int i = max(blockParam - startBlock, 0); i <= (blockParam) - startBlock + speed + 2; i++) {
             if (laneList[i] == null || laneList[i].terrain == Terrain.FINISH) {
                 break;
             }
