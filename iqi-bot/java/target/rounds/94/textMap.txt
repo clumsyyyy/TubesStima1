@@ -1,0 +1,10 @@
+======================================================================================================
+round:94
+player: id:1 position: y:4 x:711 speed:3 state:FIXED_CAR statesThatOccurredThisRound:FIXED_CAR boosting:false boost-counter:0 damage:0 score:29 powerups: LIZARD:1, TWEET:5, EMP:3, OIL:2, BOOST:5
+opponent: id:2 position: y:4 x:32 speed:0
+
+[▓░░░░░░░░░░░░Φ░░░░░░░░░░▓Φ]
+[░░░░░░░░░░▓▓▓░░░░░░░░░░░░▓]
+[░░░░░░░░░Φ░░T»░░░░░░░░░░░░]
+[░░░░░1░░░░░░░░T░░░░░░░░░░░]
+======================================================================================================
