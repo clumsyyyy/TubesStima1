@@ -156,7 +156,7 @@ public class Helper {
         }
         List<Lane[]> map = gameState.lanes;
         Lane[] laneList = map.get(myCar.position.lane - 1 + flag); // tidak dikurangi 1 soalnya dia basisnya 0 (-1) dan dia ke kanan (+1)
-        int landingPosition = myCar.speed + 1; // harus ngecek ini basis 0 atau engga
+        int landingPosition = myCar.speed; // harus ngecek ini basis 0 atau engga
         if (laneList[landingPosition].terrain.equals(Terrain.BOOST)) {
             return 1;
         } else if (laneList[landingPosition].terrain.equals(Terrain.LIZARD)) {

@@ -65,9 +65,9 @@ public class Bot {
         List <Object> pNextBlocks;
         List <Object> leftLane = new ArrayList<>();
         List <Object> rightLane = new ArrayList <Object>();
-        List <Object> currentLane = c.getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed);
+        List <Object> currentLane = c.getBlocksInFront(myCar.position.lane, myCar.position.block + 1, myCar.speed);
         // inisialisasi next blocks (sesuai car speed atau selisih)
-        pNextBlocks = currentLane.subList(0, min(myCar.speed + 1, trackLength - myCar.position.block + 1));
+        pNextBlocks = currentLane.subList(0, min(myCar.speed, trackLength - myCar.position.block + 1));
 
         // left lane dan right lane diinisialisasi apabila bisa diinisialisasi
         List <Object> pNextBlocksLeft = currentLane, pNextBlocksRight = currentLane;
@@ -117,30 +117,35 @@ public class Bot {
 //            if (myCar.speed <= 3){
 //                return ACCELERATE;
 //            }
-            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane) < 10 && !myCar.boosting
-                    && Math.abs(myCar.position.block - opponent.position.block) <= 20){
+//            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane) < 10 && !myCar.boosting
+//                    && Math.abs(myCar.position.block - opponent.position.block) <= 20){
+//                if (h.Obstacles(pNextBlocksLeft) < h.Obstacles(currentLane) || h.Obstacles(pNextBlocksRight) < h.Obstacles(currentLane)) {
+//                    return switching(choice, pNextBlocks, pNextBlocksLeft, pNextBlocksRight);
+//                }
+//                return USE_BOOST;
+//            }
+            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane) < 10 && !myCar.boosting) {
                 if (h.Obstacles(pNextBlocksLeft) < h.Obstacles(currentLane) || h.Obstacles(pNextBlocksRight) < h.Obstacles(currentLane)) {
                     return switching(choice, pNextBlocks, pNextBlocksLeft, pNextBlocksRight);
                 }
                 return USE_BOOST;
             }
 
-
             // algoritma sederhana pengecekan apakah ada mud di depan / ada wall di depan
             // .contains(ELMT) dipake untuk tau apakah di dalem list ada ELMT tersebut
             if (pNextBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL)
                     || pNextBlocks.contains(Terrain.OIL_SPILL) || h.hasCyberTruck(0)) {
-                if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock(pNextBlocks) == 0){
+                if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock(pNextBlocks) == 0) {
                     return USE_LIZARD;
                 } else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock(pNextBlocks) != 3)
-                        && myCar.damage == 0 && passThroughPowUp(currentLane, PowerUps.BOOST)) {
+                        && myCar.damage == 0) {
                     return ACCELERATE;
                 } else {
                     return switching(choice, pNextBlocks, pNextBlocksLeft, pNextBlocksRight);
                 }
             }
-            return ACCELERATE;
         }
+        return NOTHING;
     }
 
     // ========== INISIALISASI FUNGSI HELPER DI SINI ==========
@@ -177,7 +182,7 @@ public class Bot {
             if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock(pNextBlocks) == 0){
                 return USE_LIZARD;
             } else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock(pNextBlocks) != 3)
-                    && myCar.damage == 0 && passThroughPowUp(currentLane, PowerUps.BOOST)) {
+                    && myCar.damage == 0 && passThroughPowUp(currentLane, PowerUps.BOOST)) { // TODO
                 return ACCELERATE;
             } else {
                 return switching(choice, pNextBlocks, pNextBlockLeft, pNextBlockRight);
@@ -188,6 +193,11 @@ public class Bot {
         // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
         if (h.hasPowerUp(PowerUps.TWEET, myCar.powerups)){
             return new TweetCommand(opponent.position.lane, opponent.position.block);
+        }
+
+        if (h.hasPowerUp(PowerUps.EMP, myCar.powerups) && myCar.position.block < opponent.position.block
+        && Math.abs(opponent.position.lane - myCar.position.lane) <= 1) {
+            return USE_EMP;
         }
 
         // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake
@@ -218,16 +228,11 @@ public class Bot {
             if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock(pNextBlocks) == 0){
                 return USE_LIZARD;
             } else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock(pNextBlocks) != 3)
-                    && myCar.damage == 0 && passThroughPowUp(currentLane, PowerUps.BOOST)) {
+                    && myCar.damage == 0 && passThroughPowUp(currentLane, PowerUps.BOOST)) { // TODO
                 return ACCELERATE;
             } else {
                 return switching(choice, pNextBlocks, pNextBlockLeft, pNextBlockRight);
             }
-        }
-
-        if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane) < 10 && !myCar.boosting
-                && Math.abs(myCar.position.block - opponent.position.block) <= 20){
-            return USE_BOOST;
         }
 
         if (h.hasPowerUp(PowerUps.TWEET, myCar.powerups)){
@@ -280,7 +285,7 @@ public class Bot {
                 return TURN_LEFT;
             case "STAY":
                 if (with_accelerate <= no_accelerate) {
-                    if (!myCar.boosting){
+                    if (myCar.boosting){
                         return ACCELERATE;
                     } else {
                         if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups)){
@@ -299,7 +304,7 @@ public class Bot {
                         || (currObstacleBlock <= leftObstacleBlock)
                         || (currPowerUpCount >= leftPowerUpCount)){
                     if (with_accelerate <= no_accelerate) {
-                        if (!myCar.boosting){
+                        if (myCar.boosting){
                             return ACCELERATE;
                         } else {
                             if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups)){
@@ -319,7 +324,7 @@ public class Bot {
                         || (currObstacleBlock <= rightObstacleBlock)
                         || (currPowerUpCount >=rightPowerUpCount)){
                     if (with_accelerate <= no_accelerate) {
-                        if (!myCar.boosting){
+                        if (myCar.boosting){
                             return ACCELERATE;
                         } else {
                             if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups)){
@@ -339,7 +344,7 @@ public class Bot {
                         || currObstacleBlock <= Math.min(leftObstacleBlock, rightObstacleBlock)
                         || currPowerUpCount >= Math.max(leftPowerUpCount, rightPowerUpCount)) {
                     if (with_accelerate <= no_accelerate) {
-                        if (!myCar.boosting){
+                        if (myCar.boosting){
                             return ACCELERATE;
                         } else {
                             if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups)){
@@ -359,7 +364,7 @@ public class Bot {
                     return TURN_RIGHT;
                 }
             default:
-                if (!myCar.boosting){
+                if (myCar.boosting){
                     return ACCELERATE;
                 } else {
                     if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups)){
