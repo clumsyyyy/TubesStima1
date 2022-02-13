@@ -43,11 +43,20 @@ public class Helper {
 
     public int Obstacles(List<Object> Lane) {
         int count = 0;
+        List<Lane[]> map = gameState.lanes;
+        Lane[] laneList = map.get(myCar.position.lane - 1);
+        int startBlock = map.get(0)[0].position.block;
+        int blockParam = myCar.position.block - 1;
         for (int i = 0; i < Lane.size(); i++) {
             if (Lane.get(i).equals(Terrain.MUD) ||
                     Lane.get(i).equals(Terrain.OIL_SPILL)){
                 count++;
             } else if (Lane.get(i).equals(Terrain.WALL)){
+                count += 10;
+            }
+        }
+        for (int i = max(blockParam - startBlock, 0); i <= (blockParam) - startBlock + myCar.speed + 2; i++) {
+            if (laneList[i].isOccupiedByCyberTruck) {
                 count += 10;
             }
         }
@@ -200,7 +209,7 @@ public class Helper {
         }
         List<Lane[]> map = gameState.lanes;
         Lane[] laneList = map.get(myCar.position.lane - 1 + flag); // tidak dikurangi 1 soalnya dia basisnya 0 (-1) dan dia ke kanan (+1)
-        int landingPosition = myCar.speed + 1; // harus ngecek ini basis 0 atau engga
+        int landingPosition = myCar.speed + 6; // harus ngecek ini basis 0 atau engga
         if (laneList[landingPosition].terrain.equals(Terrain.OIL_SPILL)) {
             return 1;
         } else if (laneList[landingPosition].terrain.equals(Terrain.MUD)) {
@@ -226,15 +235,16 @@ public class Helper {
         return count;
     }
 
-  public boolean hasCyberTruck(int flag) {
+  public int hasCyberTruck(int flag) {
       List<Lane[]> map = gameState.lanes;
       Lane[] laneList = map.get(myCar.position.lane - 1 + flag);
-      int count = 0;
-      for (int i = 0; i < laneList.length; i++) {
-          if (laneList[i].isOccupiedByCyberTruck){
-              return true;
+      int startBlock = map.get(0)[0].position.block;
+      int blockParam = myCar.position.block - 1;
+      for (int i = max(blockParam - startBlock, 0); i <= (blockParam) - startBlock + myCar.speed + 2; i++) {
+          if (laneList[i].isOccupiedByCyberTruck) {
+              return i; //return block cybertruck
           }
       }
-      return false;
+      return -1;
   }
 }
