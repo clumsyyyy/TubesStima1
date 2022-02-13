@@ -121,6 +121,7 @@ public class Bot {
             }
 
 
+
             // algoritma sederhana pengecekan apakah ada mud di depan / ada wall di depan
             // .contains(ELMT) dipake untuk tau apakah di dalem list ada ELMT tersebut
             if (currentLane.contains(Terrain.MUD) || currentLane.contains(Terrain.WALL)
@@ -141,12 +142,10 @@ public class Bot {
                     return USE_EMP;
                 }
             }
-
             // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
             if (h.hasPowerUp(PowerUps.TWEET, myCar.powerups)){
                 return new TweetCommand(opponent.position.lane, opponent.position.block + opponent.speed + 1);
             }
-
             return ACCELERATE;
         }
     }
@@ -200,13 +199,6 @@ public class Bot {
         // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
         if (h.hasPowerUp(PowerUps.TWEET, myCar.powerups)){
             return new TweetCommand(opponent.position.lane, opponent.position.block + opponent.speed + 1);
-        }
-
-        if (h.hasPowerUp(PowerUps.EMP, myCar.powerups)){
-            if (opponent.position.lane <= myCar.position.lane + 1 && opponent.position.lane >= myCar.position.lane - 1
-                    && opponent.position.block > myCar.position.block){
-                return USE_EMP;
-            }
         }
 
         // kalau lane mobil kita sama dengan len musuh dan kita punya oil, pake
