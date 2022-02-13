@@ -67,18 +67,17 @@ public class Bot {
         List <Object> rightLane = new ArrayList <Object>();
         List <Object> currentLane = c.getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed);
         // inisialisasi next blocks (sesuai car speed atau selisih)
-        if (currentLane.size() >= min(myCar.speed, trackLength - myCar.position.block + 1)) {
-            pNextBlocks = currentLane.subList(0, min(myCar.speed, trackLength - myCar.position.block + 1) + 1);
-        } else {
-            pNextBlocks = currentLane;
-        }
+        pNextBlocks = currentLane.subList(0, min(myCar.speed + 1, trackLength - myCar.position.block + 1));
 
         // left lane dan right lane diinisialisasi apabila bisa diinisialisasi
+        List <Object> pNextBlocksLeft = currentLane, pNextBlocksRight = currentLane;
         if (myCar.position.lane > 1){
             leftLane = c.getBlocksInFront(myCar.position.lane - 1, myCar.position.block, myCar.speed);
+            pNextBlocksLeft = leftLane.subList(0, min(myCar.speed, trackLength - myCar.position.block + 1));
         }
         if (myCar.position.lane < 4){
             rightLane = c.getBlocksInFront(myCar.position.lane + 1, myCar.position.block, myCar.speed);
+            pNextBlocksRight = rightLane.subList(0, min(myCar.speed, trackLength - myCar.position.block + 1));
         }
 
         List <Object> boostLane = c.getBlocksInFront(myCar.position.lane, myCar.position.block, 15);
@@ -92,17 +91,21 @@ public class Bot {
         }
 
         if (myCar.speed <= 3){
-            return ACCELERATE;
+            if (h.Obstacles(pNextBlocks) <= 1 && myCar.damage == 0) {
+                return ACCELERATE;
+            } else {
+                return switching(choice, pNextBlocks, pNextBlocksLeft, pNextBlocksRight);
+            }
         }
 
         // algoritma jika lane kosong
         if (h.Obstacles(currentLane) == 0){
             if (myCar.position.lane == opponent.position.lane){
                 //jika mobil musuh ada di lane yang sama dengan kita, coba main agresif
-                return sameLaneCommand(choice, myCar, opponent, currentLane, pNextBlocks);
+                return sameLaneCommand(choice, myCar, opponent, currentLane, pNextBlocks, pNextBlocksLeft, pNextBlocksRight);
             } else {
                 //jika mobil musuh beda, algonya beda
-                return diffLaneCommand(choice, myCar, opponent, currentLane, pNextBlocks);
+                return diffLaneCommand(choice, myCar, opponent, currentLane, pNextBlocks, pNextBlocksLeft, pNextBlocksRight);
             }
         } else {
             // algoritma apabila ada obstacles
@@ -114,22 +117,26 @@ public class Bot {
 //            if (myCar.speed <= 3){
 //                return ACCELERATE;
 //            }
-
-            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups)){
+            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane) < 10 && !myCar.boosting
+                    && Math.abs(myCar.position.block - opponent.position.block) <= 20){
+                if (h.Obstacles(pNextBlocksLeft) < h.Obstacles(currentLane) || h.Obstacles(pNextBlocksRight) < h.Obstacles(currentLane)) {
+                    return switching(choice, pNextBlocks, pNextBlocksLeft, pNextBlocksRight);
+                }
                 return USE_BOOST;
             }
 
+
             // algoritma sederhana pengecekan apakah ada mud di depan / ada wall di depan
             // .contains(ELMT) dipake untuk tau apakah di dalem list ada ELMT tersebut
-            if (currentLane.contains(Terrain.MUD) || currentLane.contains(Terrain.WALL)
-                    || currentLane.contains(Terrain.OIL_SPILL) || h.hasCyberTruck(0)) {
-                if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock("CENTER") == 0){
+            if (pNextBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL)
+                    || pNextBlocks.contains(Terrain.OIL_SPILL) || h.hasCyberTruck(0)) {
+                if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock(pNextBlocks) == 0){
                     return USE_LIZARD;
-                } else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock("CENTER") != 3)
+                } else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock(pNextBlocks) != 3)
                         && myCar.damage == 0 && passThroughPowUp(currentLane, PowerUps.BOOST)) {
                     return ACCELERATE;
                 } else {
-                    return switching(choice);
+                    return switching(choice, pNextBlocks, pNextBlocksLeft, pNextBlocksRight);
                 }
             }
             return ACCELERATE;
@@ -142,7 +149,7 @@ public class Bot {
     private boolean passThroughPowUp(List <Object> Lane, PowerUps powerUp) {
         int i = 0;
         boolean found = false;
-        while (i < myCar.speed && !found) {
+        while (i < Lane.size() && !found) {
             if (Lane.get(i).equals(powerUp)) {
                 found = true;
             } else {
@@ -152,7 +159,8 @@ public class Bot {
         return found;
     }
 
-    private Command sameLaneCommand(String choice, Car myCar, Car opponent, List<Object> currentLane, List<Object> pNextBlocks){
+    private Command sameLaneCommand(String choice, Car myCar, Car opponent, List<Object> currentLane, List<Object> pNextBlocks
+            , List <Object> pNextBlockLeft, List <Object> pNextBlockRight){
 //        if (myCar.damage >= 4){
 //            return FIX;
 //        }
@@ -164,19 +172,15 @@ public class Bot {
             return USE_BOOST;
         }
 
-        if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups)){
-            return USE_BOOST;
-        }
-
-        if (currentLane.contains(Terrain.MUD) || currentLane.contains(Terrain.WALL)
-                || currentLane.contains(Terrain.OIL_SPILL) || h.hasCyberTruck(0)){
-            if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock("CENTER") == 0){
+        if (pNextBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL)
+                || pNextBlocks.contains(Terrain.OIL_SPILL) || h.hasCyberTruck(0)){
+            if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock(pNextBlocks) == 0){
                 return USE_LIZARD;
-            } else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock("CENTER") != 3)
+            } else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock(pNextBlocks) != 3)
                     && myCar.damage == 0 && passThroughPowUp(currentLane, PowerUps.BOOST)) {
                 return ACCELERATE;
             } else {
-                return switching(choice);
+                return switching(choice, pNextBlocks, pNextBlockLeft, pNextBlockRight);
             }
         }
 
@@ -196,31 +200,28 @@ public class Bot {
     }
 
 
-    private Command diffLaneCommand(String choice, Car myCar, Car opponent, List<Object> currentLane, List<Object> pNextBlocks){
+    private Command diffLaneCommand(String choice, Car myCar, Car opponent, List<Object> currentLane, List<Object> pNextBlocks
+            , List <Object> pNextBlockLeft, List <Object> pNextBlockRight){
 //        if (myCar.damage >= 4){
 //            return FIX;
 //        }
 //        if (myCar.speed <= 3){
 //            return ACCELERATE;
 //        }'
-        if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane) < 10 && !myCar.boosting
-                && Math.abs(myCar.position.block - opponent.position.block) <= 20){
+
+        if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane) < 10 && !myCar.boosting) {
             return USE_BOOST;
         }
 
-        if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups)){
-            return USE_BOOST;
-        }
-
-        if (currentLane.contains(Terrain.MUD) || currentLane.contains(Terrain.WALL)
-                || currentLane.contains(Terrain.OIL_SPILL) || h.hasCyberTruck(0)){
-            if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock("CENTER") == 0){
+        if (pNextBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL)
+                || pNextBlocks.contains(Terrain.OIL_SPILL) || h.hasCyberTruck(0)){
+            if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock(pNextBlocks) == 0){
                 return USE_LIZARD;
-            } else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock("CENTER") != 3)
+            } else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock(pNextBlocks) != 3)
                     && myCar.damage == 0 && passThroughPowUp(currentLane, PowerUps.BOOST)) {
                 return ACCELERATE;
             } else {
-                return switching(choice);
+                return switching(choice, pNextBlocks, pNextBlockLeft, pNextBlockRight);
             }
         }
 
@@ -249,7 +250,7 @@ public class Bot {
         return ACCELERATE;
     }
 
-    private Command switching(String choice){
+    private Command switching(String choice, List <Object> pNextBlock, List <Object> pNextBlockLeft, List <Object> pNextBlockRight){
         int no_accelerate = h.Obstacles(c.getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed));
         int with_accelerate = h.Obstacles(c.getBlocksInFront(myCar.position.lane, myCar.position.block,  h.nextSpeedState(myCar)));
         int leftLandingBlock = 100;
@@ -261,17 +262,17 @@ public class Bot {
         int rightPowerUpCount = 0;
 
         int currLandingBlock = h.LaneBlock("CENTER");
-        int currObstacleBlock = h.obstacleLandingBlock("CENTER");
+        int currObstacleBlock = h.obstacleLandingBlock(pNextBlock);
         int currPowerUpCount = h.countPowerUps(c.getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed));
 
         if (myCar.position.lane > 1){
             leftLandingBlock = h.LaneBlock("LEFT");
-            leftObstacleBlock = h.obstacleLandingBlock("LEFT");
+            leftObstacleBlock = h.obstacleLandingBlock(pNextBlockLeft);
             leftPowerUpCount = h.countPowerUps(c.getBlocksInFront(myCar.position.lane - 1, myCar.position.block, myCar.speed));
         }
         if (myCar.position.lane < 4) {
             rightLandingBlock = h.LaneBlock("RIGHT");
-            rightObstacleBlock = h.obstacleLandingBlock("RIGHT");
+            rightObstacleBlock = h.obstacleLandingBlock(pNextBlockRight);
         }
 
         switch (choice) {

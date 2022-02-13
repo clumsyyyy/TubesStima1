@@ -191,25 +191,24 @@ public class Helper {
         }
     }
 
-    public int obstacleLandingBlock(String direction) {
+    public int obstacleLandingBlock(List<Object> pNextBlock) {
         int flag = 0;
-        if (direction.equals("LEFT")){
-            flag = -1;
-        } else if (direction.equals("RIGHT")){
-            flag = 1;
+        int landingPosition = 0; // harus ngecek ini basis 0 atau engga
+        if (pNextBlock.size() >= 2) {
+            landingPosition = myCar.speed - 2;
         }
-        List<Lane[]> map = gameState.lanes;
-        Lane[] laneList = map.get(myCar.position.lane - 1 + flag); // tidak dikurangi 1 soalnya dia basisnya 0 (-1) dan dia ke kanan (+1)
-        int landingPosition = myCar.speed ; // harus ngecek ini basis 0 atau engga
-        if (laneList[landingPosition].terrain.equals(Terrain.OIL_SPILL)) {
-            return 1;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.MUD)) {
-            return 2;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.WALL)) {
-            return 3;
-        } else {
-            return 0;
+        if (myCar.speed > 0) {
+            if (pNextBlock.get(landingPosition).equals(Terrain.OIL_SPILL)) {
+                return 1;
+            } else if (pNextBlock.get(landingPosition).equals(Terrain.MUD)) {
+                return 2;
+            } else if (pNextBlock.get(landingPosition).equals(Terrain.WALL)) {
+                return 3;
+            } else {
+                return 0;
+            }
         }
+        return 0;
     }
 
     public int countPowerUps(List<Object> laneList){
