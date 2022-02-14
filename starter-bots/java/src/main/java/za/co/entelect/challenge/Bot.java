@@ -69,21 +69,21 @@ public class Bot {
         // inisialisasi next blocks (sesuai car speed atau selisih)
         List <Object> pNextBlocks = currentLane;
         if (currentLane.size() >= min(myCar.speed, (trackLength - myCar.position.block + 1))) {
-            pNextBlocks = currentLane.subList(0, min(myCar.speed, (trackLength - myCar.position.block + 1)));
+            pNextBlocks = currentLane.subList(0, myCar.speed + 1);
         }
 
         // left lane dan right lane diinisialisasi apabila bisa diinisialisasi
-        List <Object> pNextBlocksLeft = currentLane, pNextBlocksRight = currentLane;
+        List <Object> pNextBlocksLeft = pNextBlocks, pNextBlocksRight = pNextBlocks;
         if (myCar.position.lane > 1){
-            leftLane = c.getBlocksInFront(myCar.position.lane - 1, myCar.position.block, myCar.speed);
+            leftLane = c.getBlocksInFront(myCar.position.lane - 1, myCar.position.block - 1, myCar.speed);
             if (leftLane.size() >= min(myCar.speed, (trackLength - myCar.position.block + 1))) {
-                pNextBlocksLeft = currentLane.subList(0, min(myCar.speed, (trackLength - myCar.position.block + 1)));
+                pNextBlocksLeft = leftLane;
             }
         }
         if (myCar.position.lane < 4){
-            rightLane = c.getBlocksInFront(myCar.position.lane + 1, myCar.position.block, myCar.speed);
+            rightLane = c.getBlocksInFront(myCar.position.lane + 1, myCar.position.block - 1, myCar.speed);
             if (rightLane.size() >= min(myCar.speed, (trackLength - myCar.position.block + 1))) {
-                pNextBlocksRight = rightLane.subList(0, min(myCar.speed, trackLength - myCar.position.block + 1));
+                pNextBlocksRight = rightLane;
             }
         }
 
@@ -146,9 +146,9 @@ public class Bot {
             // .contains(ELMT) dipake untuk tau apakah di dalem list ada ELMT tersebut
 
             // TODO Note : bagian kode yg ini gw hilangin untuk kode di bawah
-    //         else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock(pNextBlocks) != 3) && myCar.damage == 0) {
-    //              return ACCELERATE;
-    //         }
+            //         else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock(pNextBlocks) != 3) && myCar.damage == 0) {
+            //              return ACCELERATE;
+            //         }
             if (pNextBlocks.contains(Terrain.MUD) || pNextBlocks.contains(Terrain.WALL)
                     || pNextBlocks.contains(Terrain.OIL_SPILL) || h.hasCyberTruck(0)) {
                 if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock(pNextBlocks) == 0) {
@@ -166,7 +166,7 @@ public class Bot {
 
     // fungsi ngecek dia udah deket finish atau belum
     private boolean nearFinish (List<Object> CurrLane, Car myCar) {
-        int i = 1;
+        int i = 0;
         boolean finish = false;
         while (i < myCar.speed && !finish) {
             if (CurrLane.get(i).equals(Terrain.FINISH)) {
@@ -212,7 +212,7 @@ public class Bot {
                 return USE_BOOST;
             }
 
-            /*if (with_accelerate < 10) {
+/*            if (with_accelerate < 10) {
                 return ACCELERATE;
             }*/
 
@@ -302,7 +302,7 @@ public class Bot {
         //     if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock(pNextBlocks) == 0){
         //         return USE_LIZARD;
         //     } else if ((!currentLane.contains(Terrain.WALL) || h.obstacleLandingBlock(pNextBlocks) != 3)
-        //             && myCar.damage == 0 && passThroughPowUp(currentLane, PowerUps.BOOST)) { // 
+        //             && myCar.damage == 0 && passThroughPowUp(currentLane, PowerUps.BOOST)) { //
         //         return ACCELERATE;
         //     } else {
         //         return switching(choice, pNextBlocks, pNextBlockLeft, pNextBlockRight);
@@ -314,11 +314,12 @@ public class Bot {
 
     // ngubah switching biar dia ga cuma liat landingnya aja di fungsi %ObstacleBlock, tapi full 1 path yang bakal dilewatin mobilnya
     // ngubah switching biar dia ga cuma liat landingnya aja di fungsi %ObstacleBlock, tapi full 1 path yang bakal dilewatin mobilnya
-    // ngubah switching biar dia ga cuma liat landingnya aja di fungsi %ObstacleBlock, tapi full 1 path yang bakal dilewatin mobilnya
     private Command switching(String choice, List <Object> pNextBlock, List <Object> pNextBlockLeft, List <Object> pNextBlockRight){
         int no_accelerate = h.Obstacles(c.getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed));
         int with_accelerate = h.Obstacles(c.getBlocksInFront(myCar.position.lane, myCar.position.block,  h.nextSpeedState(myCar)));
         int with_boost = h.Obstacles(c.getBlocksInFront(myCar.position.lane, myCar.position.block, h.currentMaxSpeed(myCar)));
+
+
         int leftObstacleBlock = 100;
         int leftPowerUpCount = 0;
 
@@ -408,8 +409,10 @@ public class Bot {
             case "ALL":
                 // bandingin powerup yang ada di kiri dan tengah
                 // kalau sama jenisnya, cek dulu mendingan ngebut atau engga
-                if (currObstacleBlock <= Math.min(leftObstacleBlock, rightObstacleBlock)
-                        || currPowerUpCount >= Math.max(leftPowerUpCount, rightPowerUpCount)) {
+                int min = h.min3(leftObstacleBlock, currObstacleBlock, rightObstacleBlock);
+                int max = h.max3(currPowerUpCount, leftPowerUpCount, rightPowerUpCount);
+                if (currObstacleBlock == min
+                        || currPowerUpCount == max) {
                     if (with_accelerate <= no_accelerate) {
                         if (!myCar.boosting && h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && with_boost <= with_accelerate) {
                             return USE_BOOST;
@@ -423,15 +426,15 @@ public class Bot {
                             return NOTHING;
                         }
                     }
-                } else if (leftObstacleBlock <= Math.min(currObstacleBlock, rightObstacleBlock)
-                        || leftPowerUpCount >= Math.max(currPowerUpCount, rightPowerUpCount)) {
+                } else if (leftObstacleBlock == min
+                        || leftPowerUpCount == max) {
                     if (myCar.speed == 0) {
                         return ACCELERATE;
                     } else {
                         return TURN_LEFT;
                     }
-                } else if (rightObstacleBlock <= Math.min(currObstacleBlock, leftObstacleBlock)
-                        || rightPowerUpCount >= Math.max(currPowerUpCount, leftPowerUpCount)) {
+                } else if (rightObstacleBlock == min
+                        || rightPowerUpCount == max) {
                     if (myCar.speed == 0) {
                         return ACCELERATE;
                     } else {
@@ -448,7 +451,6 @@ public class Bot {
                         return NOTHING;
                     }
                 }
-
         }
     }
 }
