@@ -244,19 +244,6 @@ public class Helper {
         return count;
     }
 
-<<<<<<< HEAD
-  public boolean hasCyberTruck(int flag) {
-      List<Lane[]> map = gameState.lanes;
-      Lane[] laneList = map.get(myCar.position.lane - 1 + flag);
-      int count = 0;
-      for (int i = 0; i < laneList.length; i++) {
-          if (laneList[i].isOccupiedByCyberTruck){
-              return true;
-          }
-      }
-      return false;
-  }
-=======
     public boolean hasCyberTruck(int flag) {
         List<Lane[]> map = gameState.lanes;
         Lane[] laneList = map.get(myCar.position.lane - 1 + flag);
@@ -268,5 +255,4 @@ public class Helper {
         }
         return false;
     }
->>>>>>> Adit
 }
