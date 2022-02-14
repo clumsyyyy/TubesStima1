@@ -1,10 +1,10 @@
 ======================================================================================================
 round:27
-player: id:2 position: y:4 x:201 speed:9 state:ACCELERATING statesThatOccurredThisRound:ACCELERATING boosting:false boost-counter:0 damage:1 score:24 powerups: LIZARD:1, TWEET:3, EMP:1, OIL:1, BOOST:3
-opponent: id:1 position: y:2 x:286 speed:9
+player: id:2 position: y:4 x:187 speed:9 state:ACCELERATING statesThatOccurredThisRound:ACCELERATING boosting:false boost-counter:0 damage:1 score:8 powerups: OIL:2, BOOST:2, EMP:2
+opponent: id:1 position: y:2 x:203 speed:8
 
-[░░░░░░░░░░░░░░░░░░░#░░▓░*░]
-[░░░░░░░░░░░░░░░░░░░░░░░░░░]
-[░T░░░░░░░░░░░░░»░░»▓░░░░░*]
-[░░░░░2░░░░░*░░░░░░░░Φ░░░░░]
+[░░░░░░░░▓░░░░░░░░░░░░░░░░░]
+[░░░▓░░░▓░░░░░░Φ░░░░░Φ1░Φ░░]
+[░░░░░▓T░░░»░░░░░∱*░░░░░░▓░]
+[Φ░░░░2░░░░░░░░░░░T░░░░░░░░]
 ======================================================================================================

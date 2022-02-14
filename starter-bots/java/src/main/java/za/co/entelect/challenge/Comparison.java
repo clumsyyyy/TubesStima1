@@ -43,7 +43,7 @@ public class Comparison {
         // tambahin Acount buat acccelerate dan Bcount buat boost
         int Acount = h.Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, h.nextSpeedState(myCar)).subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
         int Bcount = h.Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, 15).subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
-        
+
         // tambahin parameter buat jalan lurus
         if (Ccount < Lcount && Ccount < Rcount) {
             if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && Bcount < 10) {
@@ -88,14 +88,15 @@ public class Comparison {
         List<Lane[]> map = gameState.lanes;
         List<Object> blocks = new ArrayList<>();
         int startBlock = map.get(0)[0].position.block;
-        int blockParam = block - 1;
+
         Lane[] laneList = map.get(lane - 1);
-        for (int i = max(blockParam - startBlock, 0); i <= (blockParam) - startBlock + speed + 2; i++) {
+        for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed + 2; i++) {
             if (laneList[i] == null || laneList[i].terrain == Terrain.FINISH) {
                 break;
             }
 
             blocks.add(laneList[i].terrain);
+
         }
         return blocks;
     }

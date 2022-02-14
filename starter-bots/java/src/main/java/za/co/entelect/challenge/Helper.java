@@ -211,6 +211,25 @@ public class Helper {
         return 0;
     }
 
+    public int currentMaxSpeed (Car myCar) {
+        switch (myCar.damage) {
+            case 0:
+                return 15;
+            case 1:
+                return 9;
+            case 2:
+                return 8;
+            case 3:
+                return 6;
+            case 4:
+                return 3;
+            case 5:
+                return 0;
+            default:
+                return myCar.speed;
+        }
+    }
+
     public int countPowerUps(List<Object> laneList){
         int count = 0;
         for (int i = 0; i < laneList.size(); i++) {
@@ -225,15 +244,15 @@ public class Helper {
         return count;
     }
 
-  public boolean hasCyberTruck(int flag) {
-      List<Lane[]> map = gameState.lanes;
-      Lane[] laneList = map.get(myCar.position.lane - 1 + flag);
-      int count = 0;
-      for (int i = 0; i < laneList.length; i++) {
-          if (laneList[i].isOccupiedByCyberTruck){
-              return true;
-          }
-      }
-      return false;
-  }
+    public boolean hasCyberTruck(int flag) {
+        List<Lane[]> map = gameState.lanes;
+        Lane[] laneList = map.get(myCar.position.lane - 1 + flag);
+        int count = 0;
+        for (int i = 0; i < laneList.length; i++) {
+            if (laneList[i].isOccupiedByCyberTruck){
+                return true;
+            }
+        }
+        return false;
+    }
 }
