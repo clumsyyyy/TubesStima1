@@ -19,6 +19,7 @@ public class Comparison {
     private final static Command TURN_LEFT = new ChangeLaneCommand(-1);
     private final static Command TURN_RIGHT = new ChangeLaneCommand(1);
     private final static Command USE_BOOST = new BoostCommand();
+    private final static Command NOTHING = new DoNothingCommand();
 
     private Helper h;
     private final GameState gameState;
@@ -35,16 +36,22 @@ public class Comparison {
     public Command compareObstacles(int trackLength) {
         int Lcount = h.Obstacles(getBlocksInFront(myCar.position.lane - 1, myCar.position.block, myCar.speed - 1)
                 .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
-        int Ccount = h.Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed - 1)
+        int Ccount = h.Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed) // edit hilangin -1 soalnya dia lurus
                 .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
         int Rcount = h.Obstacles(getBlocksInFront(myCar.position.lane + 1, myCar.position.block, myCar.speed - 1)
                 .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
+        // tambahin Acount buat acccelerate dan Bcount buat boost
+        int Acount = h.Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, h.nextSpeedState(myCar)).subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
+        int Bcount = h.Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, 15).subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
 
+        // tambahin parameter buat jalan lurus
         if (Ccount < Lcount && Ccount < Rcount) {
-            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups)) {
+            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && Bcount < 10) {
                 return USE_BOOST;
-            } else {
+            } else if (Acount < 10 && myCar.speed != 9) {
                 return ACCELERATE;
+            } else {
+                return NOTHING;
             }
         } else if (Rcount < Ccount && Rcount < Lcount) {
             return TURN_RIGHT;
@@ -81,16 +88,18 @@ public class Comparison {
         List<Lane[]> map = gameState.lanes;
         List<Object> blocks = new ArrayList<>();
         int startBlock = map.get(0)[0].position.block;
-        int blockParam = block - 1;
+
         Lane[] laneList = map.get(lane - 1);
-        for (int i = max(blockParam - startBlock, 0); i <= (blockParam) - startBlock + speed + 2; i++) {
+        for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed + 2; i++) {
             if (laneList[i] == null || laneList[i].terrain == Terrain.FINISH) {
                 break;
             }
 
             blocks.add(laneList[i].terrain);
+
         }
         return blocks;
     }
 }
+
 

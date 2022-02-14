@@ -43,20 +43,11 @@ public class Helper {
 
     public int Obstacles(List<Object> Lane) {
         int count = 0;
-        List<Lane[]> map = gameState.lanes;
-        Lane[] laneList = map.get(myCar.position.lane - 1);
-        int startBlock = map.get(0)[0].position.block;
-        int blockParam = myCar.position.block - 1;
         for (int i = 0; i < Lane.size(); i++) {
             if (Lane.get(i).equals(Terrain.MUD) ||
                     Lane.get(i).equals(Terrain.OIL_SPILL)){
                 count++;
             } else if (Lane.get(i).equals(Terrain.WALL)){
-                count += 10;
-            }
-        }
-        for (int i = max(blockParam - startBlock, 0); i <= (blockParam) - startBlock + myCar.speed + 2; i++) {
-            if (laneList[i].isOccupiedByCyberTruck) {
                 count += 10;
             }
         }
@@ -165,7 +156,7 @@ public class Helper {
         }
         List<Lane[]> map = gameState.lanes;
         Lane[] laneList = map.get(myCar.position.lane - 1 + flag); // tidak dikurangi 1 soalnya dia basisnya 0 (-1) dan dia ke kanan (+1)
-        int landingPosition = myCar.speed + 1; // harus ngecek ini basis 0 atau engga
+        int landingPosition = myCar.speed; // harus ngecek ini basis 0 atau engga
         if (laneList[landingPosition].terrain.equals(Terrain.BOOST)) {
             return 1;
         } else if (laneList[landingPosition].terrain.equals(Terrain.LIZARD)) {
@@ -200,24 +191,42 @@ public class Helper {
         }
     }
 
-    public int obstacleLandingBlock(String direction) {
+    public int obstacleLandingBlock(List<Object> pNextBlock) {
         int flag = 0;
-        if (direction.equals("LEFT")){
-            flag = -1;
-        } else if (direction.equals("RIGHT")){
-            flag = 1;
+        int landingPosition = 0; // harus ngecek ini basis 0 atau engga
+        if (pNextBlock.size() >= 2) {
+            landingPosition = myCar.speed - 2;
         }
-        List<Lane[]> map = gameState.lanes;
-        Lane[] laneList = map.get(myCar.position.lane - 1 + flag); // tidak dikurangi 1 soalnya dia basisnya 0 (-1) dan dia ke kanan (+1)
-        int landingPosition = myCar.speed + 6; // harus ngecek ini basis 0 atau engga
-        if (laneList[landingPosition].terrain.equals(Terrain.OIL_SPILL)) {
-            return 1;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.MUD)) {
-            return 2;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.WALL)) {
-            return 3;
-        } else {
-            return 0;
+        if (myCar.speed > 0) {
+            if (pNextBlock.get(landingPosition).equals(Terrain.OIL_SPILL)) {
+                return 1;
+            } else if (pNextBlock.get(landingPosition).equals(Terrain.MUD)) {
+                return 2;
+            } else if (pNextBlock.get(landingPosition).equals(Terrain.WALL)) {
+                return 3;
+            } else {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    public int currentMaxSpeed (Car myCar) {
+        switch (myCar.damage) {
+            case 0:
+                return 15;
+            case 1:
+                return 9;
+            case 2:
+                return 8;
+            case 3:
+                return 6;
+            case 4:
+                return 3;
+            case 5:
+                return 0;
+            default:
+                return myCar.speed;
         }
     }
 
@@ -235,16 +244,15 @@ public class Helper {
         return count;
     }
 
-  public int hasCyberTruck(int flag) {
+  public boolean hasCyberTruck(int flag) {
       List<Lane[]> map = gameState.lanes;
       Lane[] laneList = map.get(myCar.position.lane - 1 + flag);
-      int startBlock = map.get(0)[0].position.block;
-      int blockParam = myCar.position.block - 1;
-      for (int i = max(blockParam - startBlock, 0); i <= (blockParam) - startBlock + myCar.speed + 2; i++) {
-          if (laneList[i].isOccupiedByCyberTruck) {
-              return i; //return block cybertruck
+      int count = 0;
+      for (int i = 0; i < laneList.length; i++) {
+          if (laneList[i].isOccupiedByCyberTruck){
+              return true;
           }
       }
-      return -1;
+      return false;
   }
 }
