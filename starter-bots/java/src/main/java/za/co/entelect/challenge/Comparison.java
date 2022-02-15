@@ -33,39 +33,12 @@ public class Comparison {
 
     // membandingkan obstacles dari 3 lane
     // CALL KALAU DIA GA DI LANE 1 ATAU 4
-    public Command compareObstacles(int trackLength) {
-        int Lcount = h.Obstacles(getBlocksInFront(myCar.position.lane - 1, myCar.position.block, myCar.speed - 1)
-                .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
-        int Ccount = h.Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed) // edit hilangin -1 soalnya dia lurus
-                .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
-        int Rcount = h.Obstacles(getBlocksInFront(myCar.position.lane + 1, myCar.position.block, myCar.speed - 1)
-                .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
-        // tambahin Acount buat acccelerate dan Bcount buat boost
-        int Acount = h.Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, h.nextSpeedState(myCar)).subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
-        int Bcount = h.Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, 15).subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
 
-        // tambahin parameter buat jalan lurus
-        if (Ccount < Lcount && Ccount < Rcount) {
-            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && Bcount < 10) {
-                return USE_BOOST;
-            } else if (Acount < 10 && myCar.speed != 9) {
-                return ACCELERATE;
-            } else {
-                return NOTHING;
-            }
-        } else if (Rcount < Ccount && Rcount < Lcount) {
-            return TURN_RIGHT;
-        } else if (Lcount < Ccount && Lcount < Rcount) {
-            return TURN_LEFT;
-        } else {
-            return ACCELERATE;
-        }
-    }
 
     // membandingkan obstacles 2 lane (kiri/kanan, flag = -1 berarti kiri, flag = +1 berarti kanan)
     public Command compareTwoLanes(List<Object> CenterLane, List<Object> CompLane, int flag, int trackLength) {
-        int Ccount = h.Obstacles(CenterLane);
-        int Pcount = h.Obstacles(CompLane);
+        int Ccount = h.Obstacles(CenterLane, 0);
+        int Pcount = h.Obstacles(CompLane, flag);
 
         if (Pcount < Ccount) {
             if (flag == -1) {

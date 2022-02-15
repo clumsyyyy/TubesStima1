@@ -41,7 +41,7 @@ public class Helper {
         return false;
     }
 
-    public int Obstacles(List<Object> Lane) {
+    public int Obstacles(List<Object> Lane, int flag) {
         int count = 0;
         for (int i = 0; i < Lane.size(); i++) {
             if (Lane.get(i).equals(Terrain.MUD) ||
@@ -51,6 +51,13 @@ public class Helper {
                 count += 10;
             }
         }
+        if (myCar.position.lane + flag < 0 || myCar.position.lane + flag > 3){
+            flag = 0;
+        }
+        if (hasCyberTruck(flag) != -1) {
+            count += 10;
+        }
+
         return count;
     }
 
@@ -59,15 +66,15 @@ public class Helper {
         int lCount = 100, rCount = 100, cCount = 100; //asumsi isinya wall semua
 
         if (myCar.position.lane > 1) {
-            lCount = Obstacles(left);
+            lCount = Obstacles(left, -1);
             LPos = true;
         }
         if (myCar.position.lane < 4){
-            rCount = Obstacles(right);
+            rCount = Obstacles(right, 1);
             RPos = true;
         }
 
-        cCount = Obstacles(curr);
+        cCount = Obstacles(curr, 0);
 
         if (LPos && RPos) { //kalau memungkinkan untuk pindah kiri dan kanan
             if (min3(lCount, rCount, cCount) == lCount){
@@ -153,7 +160,7 @@ public class Helper {
         if (myCar.speed > pNextBlock.size()){
             landingPosition = pNextBlock.size() - 1;
         } else {
-            landingPosition = myCar.speed - 1;
+            landingPosition = myCar.speed;
         }
 //        int landingPosition = myCar.speed + 1 ; // harus ngecek ini basis 0 atau engga,kalo getBlocksInFront myCar.speed + 1
 
@@ -217,9 +224,13 @@ public class Helper {
         // mulainya dari depan lgsg.
         for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed ; i++) {
 //        for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed + 1; i++) {
+            if (laneList[i] == null || laneList[i].terrain == Terrain.FINISH) {
+                break;
+            }
             if (laneList[i].isOccupiedByCyberTruck) {
                 return i;
             }
+
         }
         return -1;
     }
