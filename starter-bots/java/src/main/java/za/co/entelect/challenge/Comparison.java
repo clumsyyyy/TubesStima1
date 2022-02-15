@@ -63,11 +63,9 @@ public class Comparison {
     }
 
     // membandingkan obstacles 2 lane (kiri/kanan, flag = -1 berarti kiri, flag = +1 berarti kanan)
-    public Command compareTwoLanes(int flag, int trackLength) {
-        int Ccount = h.Obstacles(getBlocksInFront(myCar.position.lane, myCar.position.block, myCar.speed)
-                .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
-        int Pcount = h.Obstacles(getBlocksInFront(myCar.position.lane + flag, myCar.position.block, myCar.speed - 1)
-                .subList(0, min(myCar.speed, trackLength - myCar.position.block + 1)));
+    public Command compareTwoLanes(List<Object> CenterLane, List<Object> CompLane, int flag, int trackLength) {
+        int Ccount = h.Obstacles(CenterLane);
+        int Pcount = h.Obstacles(CompLane);
 
         if (Pcount < Ccount) {
             if (flag == -1) {

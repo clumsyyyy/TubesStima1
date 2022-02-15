@@ -146,54 +146,15 @@ public class Helper {
         }
     }
 
-
-    public int LaneBlock (String direction) {
-        int flag = 0;
-        if (direction.equals("LEFT")){
-            flag = -1;
-        } else if (direction.equals("RIGHT")){
-            flag = 1;
-        }
-        List<Lane[]> map = gameState.lanes;
-        Lane[] laneList = map.get(myCar.position.lane - 1 + flag); // tidak dikurangi 1 soalnya dia basisnya 0 (-1) dan dia ke kanan (+1)
-        int landingPosition = myCar.speed; // harus ngecek ini basis 0 atau engga
-        if (laneList[landingPosition].terrain.equals(Terrain.BOOST)) {
-            return 1;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.LIZARD)) {
-            return 2;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.TWEET)) {
-            return 3;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.OIL_POWER)) {
-            return 4;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.EMP)) {
-            return 5;
-        } else {
-            return 9;
-        }
-    }
-
-    public int accelerateLaneBlock (Car myCar, GameState gameState) {
-        List<Lane[]> map = gameState.lanes;
-        Lane[] laneList = map.get(myCar.position.lane - 1); // dikurangi 1 soalnya dia basisnya 0
-        int landingPosition = myCar.position.block +  nextSpeedState(myCar) + 1; // harus ngecek ini basis 0 atau engga
-        if (laneList[landingPosition].terrain.equals(Terrain.BOOST)) {
-            return 1;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.LIZARD)) {
-            return 2;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.TWEET)) {
-            return 3;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.OIL_POWER)) {
-            return 4;
-        } else if (laneList[landingPosition].terrain.equals(Terrain.EMP)) {
-            return 5;
-        } else {
-            return 9;
-        }
-    }
-
     public int obstacleLandingBlock(List<Object> pNextBlock) {
         // dua versi
-        int landingPosition = myCar.speed; // versi satunya
+
+        int landingPosition = 0; // versi satunya
+        if (myCar.speed > pNextBlock.size()){
+            landingPosition = pNextBlock.size() - 1;
+        } else {
+            landingPosition = myCar.speed - 1;
+        }
 //        int landingPosition = myCar.speed + 1 ; // harus ngecek ini basis 0 atau engga,kalo getBlocksInFront myCar.speed + 1
 
         if (myCar.speed > 0) {
@@ -244,15 +205,22 @@ public class Helper {
         return count;
     }
 
-    public boolean hasCyberTruck(int flag) {
+    public int hasCyberTruck(int flag) {
         List<Lane[]> map = gameState.lanes;
-        Lane[] laneList = map.get(myCar.position.lane - 1 + flag);
-        int count = 0;
-        for (int i = 0; i < laneList.length; i++) {
-            if (laneList[i].isOccupiedByCyberTruck){
-                return true;
+        List<Object> blocks = new ArrayList<>();
+        int startBlock = map.get(0)[0].position.block;
+        int lane = this.myCar.position.lane + flag;
+        int block = this.myCar.position.block;
+        Lane[] laneList = map.get(lane - 1);
+
+        // kayanya dia klo car block 5, berarti indeksnya 4, makanya mulai indeks dari block lgsg aja biar
+        // mulainya dari depan lgsg.
+        for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed ; i++) {
+//        for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed + 1; i++) {
+            if (laneList[i].isOccupiedByCyberTruck) {
+                return i;
             }
         }
-        return false;
+        return -1;
     }
 }
