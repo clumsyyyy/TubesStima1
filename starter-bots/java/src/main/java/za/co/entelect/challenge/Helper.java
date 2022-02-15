@@ -192,11 +192,10 @@ public class Helper {
     }
 
     public int obstacleLandingBlock(List<Object> pNextBlock) {
-        int flag = 0;
-        int landingPosition = 0; // harus ngecek ini basis 0 atau engga
-        if (pNextBlock.size() >= 2) {
-            landingPosition = myCar.speed - 2;
-        }
+        // dua versi
+        int landingPosition = myCar.speed; // versi satunya
+//        int landingPosition = myCar.speed + 1 ; // harus ngecek ini basis 0 atau engga,kalo getBlocksInFront myCar.speed + 1
+
         if (myCar.speed > 0) {
             if (pNextBlock.get(landingPosition).equals(Terrain.OIL_SPILL)) {
                 return 1;
@@ -207,8 +206,9 @@ public class Helper {
             } else {
                 return 0;
             }
+        } else {
+            return  0;
         }
-        return 0;
     }
 
     public int currentMaxSpeed (Car myCar) {

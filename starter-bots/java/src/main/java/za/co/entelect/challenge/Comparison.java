@@ -90,14 +90,16 @@ public class Comparison {
         int startBlock = map.get(0)[0].position.block;
 
         Lane[] laneList = map.get(lane - 1);
-        for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed + 2; i++) {
+        // kayanya dia klo car block 5, berarti indeksnya 4, makanya mulai indeks dari block lgsg aja biar
+        // mulainya dari depan lgsg.
+        for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed ; i++) {
+//        for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed + 1; i++) {
             if (laneList[i] == null || laneList[i].terrain == Terrain.FINISH) {
                 break;
             }
 
             blocks.add(laneList[i].terrain);
-
-        }
+    }
         return blocks;
     }
 }

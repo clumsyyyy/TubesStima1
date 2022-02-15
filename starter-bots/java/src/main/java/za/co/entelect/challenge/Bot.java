@@ -69,7 +69,8 @@ public class Bot {
         // inisialisasi next blocks (sesuai car speed atau selisih)
         List <Object> pNextBlocks = currentLane;
         if (currentLane.size() >= min(myCar.speed, (trackLength - myCar.position.block + 1))) {
-            pNextBlocks = currentLane.subList(0, myCar.speed + 1);
+//            pNextBlocks = currentLane.subList(0, myCar.speed + 1);
+            pNextBlocks = currentLane;
         }
 
         // left lane dan right lane diinisialisasi apabila bisa diinisialisasi
