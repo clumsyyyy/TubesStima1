@@ -101,6 +101,8 @@ public class Bot {
 
         if (myCar.damage >= 2 && !nearFinish(currentLane, myCar)){
             return FIX;
+        } else if (myCar.damage > 4) {
+            return FIX;
         }
 
         if (myCar.speed <= 3 && !nearFinish(currentLane, myCar)){
@@ -173,7 +175,7 @@ public class Bot {
     private boolean nearFinish (List<Object> CurrLane, Car myCar) {
         int i = 0;
         boolean finish = false;
-        while (i < myCar.speed - 1 && !finish) {
+        while (i < CurrLane.size() && !finish) {
             if (CurrLane.get(i).equals(Terrain.FINISH)) {
                 finish = true;
             } else {
@@ -210,7 +212,7 @@ public class Bot {
             }
             // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
             if (h.hasPowerUp(PowerUps.TWEET, myCar.powerups)){
-                return new TweetCommand(opponent.position.lane, opponent.position.block + opponent.speed);
+                return new TweetCommand(opponent.position.lane, opponent.position.block + opponent.speed + 1);
             }
 
             if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane, 0) < 10 && !myCar.boosting) {
@@ -232,7 +234,7 @@ public class Bot {
 
             // algo tweet, kalau misalnya powerup on dan lane musuhnya gada apa", kita ganggu
             if (h.hasPowerUp(PowerUps.TWEET, myCar.powerups)){
-                return new TweetCommand(opponent.position.lane, opponent.position.block + opponent.speed);
+                return new TweetCommand(opponent.position.lane, opponent.position.block + opponent.speed + 1);
             }
 
             if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane, 0) < 10 && (opponent.position.block - myCar.position.block) > 15 && !myCar.boosting) {
@@ -255,7 +257,7 @@ public class Bot {
         int with_boost = h.Obstacles(c.getBlocksInFront(myCar.position.lane, myCar.position.block, h.currentMaxSpeed(myCar)), 0);
         if (myCar.position.block >= opponent.position.block) {
             if (h.hasPowerUp(PowerUps.TWEET, myCar.powerups)){
-                return new TweetCommand(opponent.position.lane, opponent.position.block + opponent.speed);
+                return new TweetCommand(opponent.position.lane, opponent.position.block + opponent.speed + 1);
             }
             // buat antisipasi EMP
             if (Math.abs(myCar.position.lane - opponent.position.lane) == 2 && (myCar.position.lane != 1 || myCar.position.lane != 4)) {

@@ -218,19 +218,21 @@ public class Helper {
         int startBlock = map.get(0)[0].position.block;
         int lane = this.myCar.position.lane + flag;
         int block = this.myCar.position.block;
-        Lane[] laneList = map.get(lane - 1);
+        if (lane - 1 >= 0) {
+            Lane[] laneList = map.get(lane - 1);
 
-        // kayanya dia klo car block 5, berarti indeksnya 4, makanya mulai indeks dari block lgsg aja biar
-        // mulainya dari depan lgsg.
-        for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed ; i++) {
+            // kayanya dia klo car block 5, berarti indeksnya 4, makanya mulai indeks dari block lgsg aja biar
+            // mulainya dari depan lgsg.
+            for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed; i++) {
 //        for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed + 1; i++) {
-            if (laneList[i] == null || laneList[i].terrain == Terrain.FINISH) {
-                break;
-            }
-            if (laneList[i].isOccupiedByCyberTruck) {
-                return i;
-            }
+                if (laneList[i] == null || laneList[i].terrain == Terrain.FINISH) {
+                    break;
+                }
+                if (laneList[i].isOccupiedByCyberTruck) {
+                    return i;
+                }
 
+            }
         }
         return -1;
     }
