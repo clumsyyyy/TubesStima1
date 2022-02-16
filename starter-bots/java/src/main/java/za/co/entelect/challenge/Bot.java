@@ -89,7 +89,7 @@ public class Bot {
 
         if (myCar.damage >= 2 && (!nearFinish(currentLane, myCar) || h.hasPowerUp(PowerUps.BOOST, myCar.powerups))){
             return FIX;
-        } else if (myCar.damage > 3) {
+        } else if (myCar.damage > 2) {
             return FIX;
         }
 
@@ -317,29 +317,10 @@ public class Bot {
         }
         if (myCar.position.lane < 4) {
             rightObstacleBlock = h.Obstacles(pNextBlockRight, 1);
-            // tambahin ini soalnya sebelumnya gaada, makanya dia kadang2 suka ga belok kanan
             rightPowerUpCount = h.countPowerUps(c.getBlocksInFront(myCar.position.lane + 1, myCar.position.block, myCar.speed));
         }
 
         switch (choice) {
-            case "TURN_LEFT":
-                return TURN_LEFT;
-            case "STAY":
-                if (with_accelerate <= no_accelerate) {
-                    if (!myCar.boosting && h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && with_boost <= with_accelerate) {
-                        return USE_BOOST;
-                    } else {
-                        return ACCELERATE;
-                    }
-                } else {
-                    if (myCar.speed == 0) {
-                        return ACCELERATE;
-                    } else {
-                        return NOTHING;
-                    }
-                }
-            case "TURN_RIGHT":
-                return TURN_RIGHT;
             case "CURR_LEFT":
                 // bandingin powerup yang ada di kiri dan tengah
                 // kalau sama jenisnya, cek dulu mendingan ngebut atau engga
@@ -368,7 +349,8 @@ public class Bot {
             case "CURR_RIGHT":
                 // bandingin powerup yang ada di kanan dan tengah
                 // kalau sama jenisnya, cek dulu mendingan ngebut atau engga
-                if ((currObstacleBlock < rightObstacleBlock) || ((currObstacleBlock == rightObstacleBlock)
+                if ((currObstacleBlock < rightObstacleBlock)
+                        || ((currObstacleBlock == rightObstacleBlock)
                         && (currPowerUpCount >= rightPowerUpCount))){
                     if (with_accelerate <= no_accelerate) {
                         if (!myCar.boosting && h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && with_boost <= with_accelerate) {
@@ -408,8 +390,8 @@ public class Bot {
             case "ALL":
                 // bandingin powerup yang ada di kiri dan tengah
                 // kalau sama jenisnya, cek dulu mendingan ngebut atau engga
-                if (currObstacleBlock < Math.min(leftObstacleBlock, rightObstacleBlock)
-                        || ((currObstacleBlock == Math.min(leftObstacleBlock, rightObstacleBlock)
+                if ((currObstacleBlock < Math.min(leftObstacleBlock, rightObstacleBlock)
+                        || ((currObstacleBlock == Math.min(leftObstacleBlock, rightObstacleBlock))
                         && currPowerUpCount >= Math.max(leftPowerUpCount, rightPowerUpCount)))) {
                     if (with_accelerate <= no_accelerate) {
                         if (!myCar.boosting && h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && with_boost <= with_accelerate) {
@@ -426,8 +408,8 @@ public class Bot {
                     }
                 }
 
-                if (leftObstacleBlock < Math.min(currObstacleBlock, rightObstacleBlock)
-                        || ((leftObstacleBlock == Math.min(currObstacleBlock, rightObstacleBlock)
+                if ((leftObstacleBlock < Math.min(currObstacleBlock, rightObstacleBlock)
+                        || ((leftObstacleBlock == Math.min(currObstacleBlock, rightObstacleBlock))
                         && (leftPowerUpCount >= Math.max(currPowerUpCount, rightPowerUpCount))))) {
                     if (myCar.speed == 0) {
                         return ACCELERATE;
@@ -436,13 +418,27 @@ public class Bot {
                     }
                 }
 
-                if (rightObstacleBlock < Math.min(currObstacleBlock, leftObstacleBlock)
-                        || ((rightObstacleBlock == Math.min(currObstacleBlock, leftObstacleBlock)
-                        && (rightPowerUpCount >= Math.max(currPowerUpCount, leftPowerUpCount))))) {
+                if ((rightObstacleBlock < Math.min(currObstacleBlock, leftObstacleBlock))
+                        || ((rightObstacleBlock == Math.min(currObstacleBlock, leftObstacleBlock))
+                        && (rightPowerUpCount >= Math.max(currPowerUpCount, leftPowerUpCount)))) {
                     if (myCar.speed == 0) {
                         return ACCELERATE;
                     } else {
                         return TURN_RIGHT;
+                    }
+                }
+            case "STAY":
+                if (with_accelerate <= no_accelerate) {
+                    if (!myCar.boosting && h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && with_boost <= with_accelerate) {
+                        return USE_BOOST;
+                    } else {
+                        return ACCELERATE;
+                    }
+                } else {
+                    if (myCar.speed == 0) {
+                        return ACCELERATE;
+                    } else {
+                        return NOTHING;
                     }
                 }
             default:

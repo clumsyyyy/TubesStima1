@@ -63,61 +63,23 @@ public class Helper {
 
     public String compareLanes(Car myCar, List<Object> left, List<Object> curr, List<Object> right){
         boolean LPos = false; boolean RPos = false;
-        int lCount = 100, rCount = 100, cCount = 100; //asumsi isinya wall semua
 
         if (myCar.position.lane > 1) {
-            lCount = Obstacles(left, -1);
             LPos = true;
         }
         if (myCar.position.lane < 4){
-            rCount = Obstacles(right, 1);
             RPos = true;
         }
 
-        cCount = Obstacles(curr, 0);
-
-        if (LPos && RPos) { //kalau memungkinkan untuk pindah kiri dan kanan
-            if (min3(lCount, rCount, cCount) == lCount){
-                if (lCount == cCount){
-                    if (lCount == rCount){
-                        return "ALL"; // return ALL untuk membandingkan semua lane
-                    } else {
-                        return "CURR_LEFT"; // return CURR_LEFT untuk membandingkan lane curr dan kiri
-                    }
-                } else {
-                    return "TURN_LEFT"; // return TURN_LEFT kalau lane kiri yang paling sedikit (langsung belok kiri)
-                }
-            } else if (min3(lCount, rCount, cCount) == cCount){
-                if (cCount == rCount){
-                    return "CURR_RIGHT"; // return CURR_RIGHT untuk membandingkan lane curr dan kanan
-                } else {
-                    return "STAY"; // return STAY untuk stay in lane
-                }
-            } else {
-                return "TURN_RIGHT"; // return TURN_RIGHT kalau belok kanan
-            }
-        } else if (LPos && !RPos){ //kalau memungkinkan untuk pindah kiri saja
-            if (min(lCount, cCount) == lCount){
-                if (lCount == cCount){
-                    return "CURR_LEFT"; //return CURR_LEFT untuk membandingkan lane curr dan kiri
-                } else {
-                    return "TURN_LEFT"; //return TURN_LEFT untuk belok kiri
-                }
-            } else {
-                return "STAY"; // return STAY untuk stay in lane
-            }
-        } else if (!LPos && RPos){ //kalau emmungkinkan untuk pindah kanan saja
-            if (min(rCount, cCount) == rCount){
-                if (rCount == cCount){
-                    return "CURR_RIGHT"; //return CURR_RIGHT untuk membandingkan lane curr dan kanan
-                } else {
-                    return "TURN_RIGHT"; //return TURN_RIGHT untuk belok kanan
-                }
-            } else {
-                return "STAY"; // return STAY untuk stay in lane
-            }
+        if (LPos && RPos){
+            return "ALL";
+        } else if (LPos && !RPos){
+            return "CURR_LEFT";
+        } else if (RPos && !LPos){
+            return "CURR_RIGHT";
+        } else {
+            return "STAY";
         }
-        return "STAY";//return STAY default untuk stay in lane
     }
 
     public int nextSpeedState (Car targetCar) {
