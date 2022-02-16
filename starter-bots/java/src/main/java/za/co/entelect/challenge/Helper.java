@@ -1,5 +1,6 @@
 package za.co.entelect.challenge;
 
+import za.co.entelect.challenge.command.*;
 import za.co.entelect.challenge.entities.Car;
 import za.co.entelect.challenge.entities.GameState;
 import za.co.entelect.challenge.entities.Lane;
@@ -8,30 +9,41 @@ import za.co.entelect.challenge.enums.Terrain;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static java.lang.Math.min;
 import static java.lang.Math.max;
 
+// INISIALISASI CLASS YANG MENGANDUNG FUNGSI-FUNGSI HELPER
 public class Helper {
     private final Car myCar;
     private final GameState gameState;
+    private final static Command ACCELERATE = new AccelerateCommand();
+    private final static Command TURN_LEFT = new ChangeLaneCommand(-1);
+    private final static Command TURN_RIGHT = new ChangeLaneCommand(1);
+    private final static Command USE_BOOST = new BoostCommand();
 
+    // CONSTRUCTOR
     public Helper(Car myCar, GameState gameState) {
         this.myCar = myCar;
         this.gameState = gameState;
     }
 
-    public int min3(int a, int b, int c) {
-        return (min(a, min(b, c)));
+    // fungsi untuk mengembalikan list of blocks
+    public List<Object> getBlocksInFront(int lane, int block, int speed) {
+        List<Lane[]> map = gameState.lanes;
+        List<Object> blocks = new ArrayList<>();
+        Lane[] laneList = map.get(lane - 1);
+
+        int startBlock = map.get(0)[0].position.block;
+
+        for (int i = max(block - startBlock, 0); i <= block - startBlock + 15 ; i++) {
+            if (laneList[i] == null || laneList[i].terrain == Terrain.FINISH) {
+                break;
+            }
+            blocks.add(laneList[i].terrain);
+        }
+        return blocks;
     }
 
-    public int max3(int a, int b, int c){
-        return (max(a, max(b, c)));
-    }
-
-
+    // fungsi validasi power-up ada di list power-up mobil
     public Boolean hasPowerUp(PowerUps powerUpToCheck, PowerUps[] available) {
         for (PowerUps powerUp: available) {
             if (powerUp.equals(powerUpToCheck)) {
@@ -41,6 +53,8 @@ public class Helper {
         return false;
     }
 
+    // fungsi untuk menghitung damage total dari rintangan
+
     public int Obstacles(List<Object> Lane, int flag) {
         int count = 0;
         for (int i = 0; i < Lane.size(); i++) {
@@ -48,84 +62,40 @@ public class Helper {
                     Lane.get(i).equals(Terrain.OIL_SPILL)){
                 count++;
             } else if (Lane.get(i).equals(Terrain.WALL)){
-                count += 10;
+                count += 2;
             }
         }
-        if (myCar.position.lane + flag < 0 || myCar.position.lane + flag > 3){
-            flag = 0;
+        if (hasCyberTruck(flag) >= 0) {
+            count += 2;
         }
-        if (hasCyberTruck(flag) != -1) {
-            count += 10;
-        }
-
         return count;
     }
 
-    public String compareLanes(Car myCar, List<Object> left, List<Object> curr, List<Object> right){
+    // fungsi untuk mengembalikan string untuk pemilihan avoiding
+    public String compareLanes(){
         boolean LPos = false; boolean RPos = false;
-
-        if (myCar.position.lane > 1) {
+        if (myCar.position.lane != 1) {
             LPos = true;
         }
-        if (myCar.position.lane < 4){
+        if (myCar.position.lane != 4){
             RPos = true;
         }
-
-        if (LPos && RPos){
-            return "ALL";
-        } else if (LPos && !RPos){
-            return "CURR_LEFT";
-        } else if (RPos && !LPos){
-            return "CURR_RIGHT";
+        if (LPos){
+            return (RPos ? "ALL" : "CURR_LEFT");
         } else {
-            return "STAY";
+            return (RPos ? "CURR_RIGHT" : "DEFAULT");
         }
     }
 
-    public int nextSpeedState (Car targetCar) {
-        switch (targetCar.speed) {
-            case 0:
-                return 3;
-            case 3:
-            case 5:
-                return 6;
-            case 6:
-                return 8;
-            case 8:
-                return 9;
-            default:
-                return targetCar.speed;
-        }
-    }
-
-    public int prevSpeedState (Car targetCar) {
-        switch (targetCar.speed) {
-            case 9:
-                return 8;
-            case 8:
-                return 6;
-            case 6:
-                return 3;
-            case 5:
-                return 3;
-            case 3:
-                return 0;
-            default:
-                return targetCar.speed;
-        }
-    }
-
+    // fungsi untuk memprediksi lokasi berhentinya mobil, digunakan
+    // sebagai pertimbangan penggunaan fungsi lizard
     public int obstacleLandingBlock(List<Object> pNextBlock) {
-        // dua versi
-
-        int landingPosition = 0; // versi satunya
-        if (myCar.speed > pNextBlock.size()){
+        int landingPosition = 0;
+        if (myCar.speed == 15){
             landingPosition = pNextBlock.size() - 1;
         } else {
-            landingPosition = myCar.speed;
+            landingPosition = myCar.speed - 1;
         }
-//        int landingPosition = myCar.speed + 1 ; // harus ngecek ini basis 0 atau engga,kalo getBlocksInFront myCar.speed + 1
-
         if (myCar.speed > 0) {
             if (pNextBlock.get(landingPosition).equals(Terrain.OIL_SPILL)) {
                 return 1;
@@ -141,6 +111,70 @@ public class Helper {
         }
     }
 
+    // fungsi untuk menghitung jumlah power-ups dalam suatu lane, digunakan untuk
+    // membandingkan jumlah power-ups antar lane
+
+    public int countPowerUps(List<Object> laneList){
+        int count = 0;
+        for (int i = 0; i < laneList.size(); i++) {
+            if (laneList.get(i).equals(Terrain.OIL_POWER) ||
+                    laneList.get(i).equals(Terrain.EMP) ||
+                    laneList.get(i).equals(Terrain.BOOST) ||
+                    laneList.get(i).equals(Terrain.LIZARD) ||
+                    laneList.get(i).equals(Terrain.TWEET)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    // fungsi yang mengembalikan integer yang menandai adanya cybertruck dalam lane
+    // return -1 = tidak ada, return -999 = lane tidak bisa diakses, lainnya = ada cybertruck
+    public int hasCyberTruck(int flag) {
+        List<Lane[]> map = gameState.lanes;
+        List<Object> blocks = new ArrayList<>();
+        int startBlock = map.get(0)[0].position.block;
+        int lane = this.myCar.position.lane + flag;
+        int block = this.myCar.position.block;
+
+        if (lane + flag <= 4 && lane + flag >= 1) {
+            Lane[] laneList = map.get(lane - 1);
+            for (int i = max(block - startBlock, 0); i <= block - startBlock + 15; i++) {
+                if (laneList[i] == null || laneList[i].terrain == Terrain.FINISH) {
+                    break;
+                }
+                if (laneList[i].isOccupiedByCyberTruck) {
+                    return i;
+                }
+            }
+            return -1;
+        } else {
+            return -999;
+
+        }
+    }
+
+    // fungsi untuk membandingkan dua lane murni dari jumlah obstaclenya
+    public Command compareTwoLanes(List<Object> CenterLane, List<Object> CompLane, int flag, int trackLength) {
+        int Ccount = Obstacles(CenterLane, 0);
+        int Pcount = Obstacles(CompLane, flag);
+
+        if (Pcount < Ccount) {
+            if (flag == -1) {
+                return TURN_LEFT;
+            } else {
+                return TURN_RIGHT;
+            }
+        } else {
+            if (hasPowerUp(PowerUps.BOOST, myCar.powerups)) {
+                return USE_BOOST;
+            } else {
+                return ACCELERATE;
+            }
+        }
+    }
+
+    // fungsi untuk melihat speed tertinggi yang dapat diakses
     public int currentMaxSpeed (Car myCar) {
         switch (myCar.damage) {
             case 0:
@@ -160,42 +194,21 @@ public class Helper {
         }
     }
 
-    public int countPowerUps(List<Object> laneList){
-        int count = 0;
-        for (int i = 0; i < laneList.size(); i++) {
-            if (laneList.get(i).equals(Terrain.OIL_POWER) ||
-                    laneList.get(i).equals(Terrain.EMP) ||
-                    laneList.get(i).equals(Terrain.BOOST) ||
-                    laneList.get(i).equals(Terrain.LIZARD) ||
-                    laneList.get(i).equals(Terrain.TWEET)) {
-                count++;
-            }
+    // fungsi untuk mengembalikan speed state selanjutnya
+    // apabila accelerate / boost
+    public int nextSpeedState (Car targetCar) {
+        switch (targetCar.speed) {
+            case 0:
+                return 3;
+            case 3:
+            case 5:
+                return 6;
+            case 6:
+                return 8;
+            case 8:
+                return 9;
+            default:
+                return targetCar.speed;
         }
-        return count;
-    }
-
-    public int hasCyberTruck(int flag) {
-        List<Lane[]> map = gameState.lanes;
-        List<Object> blocks = new ArrayList<>();
-        int startBlock = map.get(0)[0].position.block;
-        int lane = this.myCar.position.lane + flag;
-        int block = this.myCar.position.block;
-        if (lane - 1 >= 0) {
-            Lane[] laneList = map.get(lane - 1);
-
-            // kayanya dia klo car block 5, berarti indeksnya 4, makanya mulai indeks dari block lgsg aja biar
-            // mulainya dari depan lgsg.
-            for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed; i++) {
-//        for (int i = max(block - startBlock, 0); i <= block - startBlock + myCar.speed + 1; i++) {
-                if (laneList[i] == null || laneList[i].terrain == Terrain.FINISH) {
-                    break;
-                }
-                if (laneList[i].isOccupiedByCyberTruck) {
-                    return i;
-                }
-
-            }
-        }
-        return -1;
     }
 }
