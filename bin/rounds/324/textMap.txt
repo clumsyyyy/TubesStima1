@@ -1,0 +1,10 @@
+======================================================================================================
+round:324
+player: id:1 position: y:2 x:1270 speed:6 state:USED_LIZARD statesThatOccurredThisRound:USED_LIZARD boosting:false boost-counter:0 damage:3 score:243 powerups: LIZARD:5, TWEET:4, EMP:7, OIL:16, BOOST:1
+opponent: id:2 position: y:4 x:1163 speed:3
+
+[░░░░░Φ░░░░░░░░**░░░░░░░░░░]
+[░░░░░1▓░░░░░░░░▓░░░░░░░░░░]
+[░░░░░░░░Φ░░░░░░░▓░░Φ░░░▓░#]
+[░░░░T░░░░░░░░░░░░░#░░░░*▓░]
+======================================================================================================
