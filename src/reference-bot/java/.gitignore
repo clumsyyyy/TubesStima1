@@ -51,6 +51,5 @@ fabric.properties
 \.idea/
 *.iml
 
-target/*
 *.jar 
 *bot/rounds/*

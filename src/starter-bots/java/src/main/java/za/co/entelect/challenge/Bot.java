@@ -76,11 +76,6 @@ public class Bot {
          */
         
         String choice = h.compareLanes();
-        System.out.println("lane: " + myCar.position.lane);
-        System.out.println("block: " + myCar.position.block);
-        System.out.println("choice: " + choice);
-
-
         /*
         Algoritma mengutamakan perbaikan mobil apabila damage mobil sama dengan atau lebih besar dari 2
         dan ada power-up boost, sehingga mobil dapat mencapai kecepatan tertinggi. Fix juga akan dilakukan
@@ -96,7 +91,6 @@ public class Bot {
 
         if (myCar.speed <= 3 && !nearFinish(currentLane, myCar)){
             if (h.Obstacles(currentLane, 0) <= 1 && myCar.damage == 0) {
-                System.out.println("enter switching line 99");
                 return avoiding(choice, currentLane, leftLane, rightLane);
             }
         }
@@ -127,7 +121,6 @@ public class Bot {
                 if (Math.abs(myCar.position.block - opponent.position.block) > myCar.speed) {
                     return USE_EMP;
                 } else {
-                    System.out.println("enter switching line 130");
                     return avoiding("LEFT_RIGHT", currentLane, leftLane, rightLane);
                 }
             }
@@ -142,7 +135,6 @@ public class Bot {
                     && !myCar.boosting) {
                 if (h.Obstacles(leftLane, -1) <= h.Obstacles(currentLane, 0)
                         || h.Obstacles(rightLane, 1) <= h.Obstacles(currentLane, 0)) {
-                    System.out.println("enter switching line 139");
                     return avoiding(choice, currentLane, leftLane, rightLane);
                 }
                 return USE_BOOST;
@@ -159,7 +151,6 @@ public class Bot {
                 if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock(currentLane) == 0) {
                     return USE_LIZARD;
                 } else {
-                    System.out.println("enter switching line 141");
                     return avoiding(choice, currentLane, leftLane, rightLane);
                 }
             }
@@ -187,7 +178,6 @@ public class Bot {
     // fungsi untuk melakukan algoritma jika mobil musuh berada di lane yang sama
     private Command sameLaneCommand(String choice, Car myCar, Car opponent, List<Object> currentLane,
                                     List <Object> pNextBlockLeft, List <Object> pNextBlockRight){
-        System.out.println("enter sameLaneCommand");
         int with_accelerate = h.Obstacles(h.getBlocksInFront(myCar.position.lane, myCar.position.block,  h.nextSpeedState(myCar)), 0);
 
         /*
@@ -204,16 +194,13 @@ public class Bot {
             }
 
             if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane, 0) < 10 && !myCar.boosting) {
-                System.out.println("enter use boost line 207");
                 return USE_BOOST;
             }
         } else {
             if (h.hasPowerUp(PowerUps.EMP, myCar.powerups) && (opponent.position.block > myCar.position.block)) {
                 if (Math.abs(myCar.position.block - opponent.position.block) > myCar.speed) {
-                    System.out.println("enter use emp line 218");
                     return USE_EMP;
                 } else {
-                    System.out.println("enter switching line 221");
                     return avoiding("LEFT_RIGHT", currentLane, pNextBlockLeft, pNextBlockRight);
                 }
             }
@@ -224,23 +211,19 @@ public class Bot {
 
             if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane, 0) < 10
                     && (opponent.position.block - myCar.position.block) > 15 && !myCar.boosting) {
-                System.out.println("enter use boost 232");
                 return USE_BOOST;
             }
 
             if (with_accelerate < 10) {
-                System.out.println("enter accel 237");
                 return ACCELERATE;
             }
         }
-        System.out.println("default return for samelane");
         return avoiding(choice, currentLane, pNextBlockLeft, pNextBlockRight);
     }
 
 
     private Command diffLaneCommand(String choice, Car myCar, Car opponent, List<Object> currentLane,
                                     List <Object> pNextBlockLeft, List <Object> pNextBlockRight){
-        System.out.println("enter diffLaneCommand");
         int with_accelerate = h.Obstacles(h.getBlocksInFront(myCar.position.lane, myCar.position.block,  h.nextSpeedState(myCar)), 0);
         int with_boost = h.Obstacles(h.getBlocksInFront(myCar.position.lane, myCar.position.block, h.currentMaxSpeed(myCar)), 0);
         
@@ -270,7 +253,6 @@ public class Bot {
                 if (h.hasPowerUp(PowerUps.LIZARD, myCar.powerups) && h.obstacleLandingBlock(currentLane) == 0) {
                     return USE_LIZARD;
                 } else {
-                    System.out.println("enter switching 273");
                     return avoiding(choice, currentLane, pNextBlockLeft, pNextBlockRight);
                 }
             }
@@ -281,21 +263,17 @@ public class Bot {
                     if (Math.abs(myCar.position.block - opponent.position.block) > myCar.speed) {
                         return USE_EMP;
                     } else {
-                        System.out.println("enter switching line 293");
                         return avoiding("LEFT_RIGHT", currentLane, pNextBlockLeft, pNextBlockRight);
                     }
                 }
             }
             if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && with_boost < 10 && !myCar.boosting && Math.abs(myCar.position.block - opponent.position.block) < h.currentMaxSpeed(myCar)) {
-                System.out.println("enter switching line 299");
                 return USE_BOOST;
             }
             if (with_accelerate < 10) {
-                System.out.println("enter switching line 303");
                 return ACCELERATE;
             }
         }
-        System.out.println("default return for difflane");
         return avoiding(choice, currentLane, pNextBlockLeft, pNextBlockRight);
     }
 
@@ -332,12 +310,6 @@ public class Bot {
             rightObstacleCount = h.Obstacles(pNextBlockRight, 1);
             rightPowerUpCount = h.countPowerUps(pNextBlockRight);
         }
-        System.out.println("leftObstacleCount: " + leftObstacleCount);
-        System.out.println("rightObstacleCount: " + rightObstacleCount);
-        System.out.println("currObstacleCount: " + currObstacleCount);
-        System.out.println("currPowerUpCount: " + currPowerUpCount);
-        System.out.println("leftPowerUpCount: " + leftPowerUpCount);
-        System.out.println("rightPowerUpCount: " + rightPowerUpCount);
 
         switch (choice) {
             case "CURR_LEFT":
