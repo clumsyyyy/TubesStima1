@@ -131,7 +131,7 @@ public class Bot {
              */
             
             if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups)
-                    && h.Obstacles(currentLane, 0) < 10
+                    && h.Obstacles(currentLane, 0) < 2
                     && !myCar.boosting) {
                 if (h.Obstacles(leftLane, -1) <= h.Obstacles(currentLane, 0)
                         || h.Obstacles(rightLane, 1) <= h.Obstacles(currentLane, 0)) {
@@ -193,7 +193,7 @@ public class Bot {
                 return new TweetCommand(opponent.position.lane, opponent.position.block + opponent.speed + 1);
             }
 
-            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane, 0) < 10 && !myCar.boosting) {
+            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane, 0) < 2 && !myCar.boosting) {
                 return USE_BOOST;
             }
         } else {
@@ -209,12 +209,12 @@ public class Bot {
                 return new TweetCommand(opponent.position.lane, opponent.position.block + opponent.speed + 1);
             }
 
-            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane, 0) < 10
+            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && h.Obstacles(currentLane, 0) < 2
                     && (opponent.position.block - myCar.position.block) > 15 && !myCar.boosting) {
                 return USE_BOOST;
             }
 
-            if (with_accelerate < 10) {
+            if (with_accelerate < 2) {
                 return ACCELERATE;
             }
         }
@@ -267,10 +267,10 @@ public class Bot {
                     }
                 }
             }
-            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && with_boost < 10 && !myCar.boosting && Math.abs(myCar.position.block - opponent.position.block) < h.currentMaxSpeed(myCar)) {
+            if (h.hasPowerUp(PowerUps.BOOST, myCar.powerups) && with_boost < 2 && !myCar.boosting && Math.abs(myCar.position.block - opponent.position.block) < h.currentMaxSpeed(myCar)) {
                 return USE_BOOST;
             }
-            if (with_accelerate < 10) {
+            if (with_accelerate < 2) {
                 return ACCELERATE;
             }
         }
