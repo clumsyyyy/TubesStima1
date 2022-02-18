@@ -1,0 +1,10 @@
+======================================================================================================
+round:128
+player: id:1 position: y:4 x:1116 speed:8 state:HIT_MUD statesThatOccurredThisRound:TURNING_RIGHT, HIT_MUD, HIT_MUD boosting:false boost-counter:0 damage:2 score:309 powerups: BOOST:3, EMP:12, TWEET:3
+opponent: id:2 position: y:4 x:448 speed:0
+
+[░░░░░░░░░░░░∱*░░░░░░░░░░░░]
+[░░░░░░░░░░░░#T░░Φ░░░░░░░░░]
+[░#░░░░░░░░░░░░░░░»░░░░░░░*]
+[░░░░░1░░»░T░░░░░░░░Φ░T░░░░]
+======================================================================================================

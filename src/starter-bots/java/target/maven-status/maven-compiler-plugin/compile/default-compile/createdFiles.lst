@@ -8,8 +8,8 @@ za\co\entelect\challenge\command\TweetCommand.class
 za\co\entelect\challenge\enums\Direction.class
 za\co\entelect\challenge\Helper.class
 za\co\entelect\challenge\enums\PowerUps.class
-za\co\entelect\challenge\entities\Car.class
 za\co\entelect\challenge\Bot.class
+za\co\entelect\challenge\entities\Car.class
 za\co\entelect\challenge\command\DecelerateCommand.class
 za\co\entelect\challenge\entities\Position.class
 za\co\entelect\challenge\command\AccelerateCommand.class
