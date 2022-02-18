@@ -16,7 +16,7 @@ Permainan _Overdrive_ adalah permainan dimana dua _bot_ mobil akan berusaha untu
 Isi direktori adalah sebagai berikut:
 ```
 ├── bin   [isi folder hasil kompilasi beserta jar terbaru]
-├── docs  [dokumen
+├── docs  [laporan tugas besar]
 ├── src               [folder source, sumber: https://github.com/EntelectChallenge/2020-Overdrive/releases/tag/2020.3.4]
     ├── reference-bot [algoritma bot yang dijadikan referensi, sumber dari tautan di atas]
     ├── starter-bot   [implementasi algoritma greedy]
