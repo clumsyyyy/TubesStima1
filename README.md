@@ -12,6 +12,7 @@
 
 ## Deskripsi
 Permainan _Overdrive_ adalah permainan dimana dua _bot_ mobil akan berusaha untuk memenangkan pertandingan. Bot yang dibuat menggunakan implementasi algoritma _greedy_ yang mengambil keputusan terbaik yang dapat diambil dalam suatu ronde, tanpa memperhitungkan keadaan ronde selanjutnya ataupun sebelumnya. Hal ini selaras dengan sifat algoritma _greedy_ yang mengambil optimasi secara lokal (berupa minimasi atau maksimasi kemungkinan). Optimasi lokal belum tentu mencapai keadaan optimum secara global, namun optimasi lokal dapat menghasilkan keadaan optimum lokal berupa keputusan terbaik yang diambil pada suatu saat tersebut.
+Pada implementasi algoritma bot _Overdrive_ ini, dibuat beberapa analisis kasus berdasarkan skenario yang mungkin dihadapi oleh bot selama pertandingan, seperti posisi mobil di depan atau di belakang lawan, _lane_ mobil sama atau beda dengan lawan, serta ada tidaknya rintangan di depan mobil. Setiap analisis kasus akan memiliki prioritas penggunaan powerup, berbelok/menghindar, serta mempercepat diri yang berbeda-beda, menyesuaikan kondisi agar didapatkan optimum lokal pada setiap langkah.
 
 Isi direktori adalah sebagai berikut:
 ```
